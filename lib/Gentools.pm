@@ -84,7 +84,7 @@ sub print_array_hash(%)
 
 sub print_hash(%)
 {
-	(my %hash) = @_;
+	(my %hash) = @_;	
         foreach my $key (keys %hash)
         {
                 print "$key,".$hash{"$key"}."\n";

@@ -18,7 +18,7 @@ sub dbg($$)
 sub verbose($)
 # Komunikat do wyświetlenia, jesli jest włączony tryb debug.
 {
-	print "$_[0]" if $verbose or $debug;
+	print "$_[0]" if $verbose;
 }
 
 sub yes_no($$)

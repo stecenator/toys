@@ -100,6 +100,11 @@ sub key_for_val_like($%)
 	foreach my $k (keys %hash)
 	{
 		print $k, $hash{"$k"}, "\n";
+		if ($hash{"$k"} =~ $pat)
+		{
+			dbg("Gentools::key_for_val_like", "Znaleziono dopasowanie wzorca $pat do warości $hash{$k} dla klucza $k.\n");
+			print "$k\n";
+		}
 	}
 } 
 

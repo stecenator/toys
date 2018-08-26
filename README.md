@@ -6,3 +6,6 @@ My perl toys reference
 
 Generic modules for handling some aspects of OS and TSM:
 - Gentools.pm
+- AIXtools.pm
+- LNXtools.pm
+- ISPtools.pm

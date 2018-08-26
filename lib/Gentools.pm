@@ -60,7 +60,7 @@ sub show_drv(%)                 # debugowa funkcja wyświetlająca hasha pojedyn
         }
 }
 
-sub chkos {
+sub chkos() {
 	(my $os, my $rest) = split(" ", qx/uname -a/);
         return "$os";
 }

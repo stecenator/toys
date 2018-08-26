@@ -2,11 +2,12 @@ package LNXtools;
 use strict;
 use warnings;
 use Exporter qw(import);
- 
-our @EXPORT_OK = qw(get_fc_adapters get_tape_drvs $debug $verbose);
+
+our @EXPORT_OK = qw(get_fc_adapters get_tape_drvs $debug $verbose init_module);
 our ($debug, $verbose);
-$debug=0;
-$verbose=0;
+our $debug=0;
+our $verbose=0;
+our $udev;
 
 sub dbg($$)
 # Komunikat do wyświetlenia, jesli jest włączony tryb debug.
@@ -20,10 +21,27 @@ sub verbose($)
 	print "$_[0]" if $verbose or $debug;
 }
 
+sub init_module()
+# Inicjalizacja rożnych rzeczy któ©e rożnią się pomiędzy dystrybucjami
+# Zwrotki:
+#	0 - wszystko ok
+#	1 - nie udało się znaleźć udevadm
+{
+	$udev = qx(which udevadm);
+	my $rc = $? >> 8;
+	my $ret = 0;
+	
+	dbg("LNXtools::init_module", "Wywołanie: \'which udevadm\' zakończone z kodem wyjścia $rc\n");
+	
+	$ret = 1 if $rc == 1;						# which nie znalzało udevadm
+	
+	return ($ret);
+}
+
 sub get_drv($)				# Buduje hash z atrybut->wartość dla zadanego napedu
 {
 	my %drv=();
-	my $line = qx(ls -l /dev/lin_tape/by-id/$_[0]);
+	my $line = qx(ls -l /dev/lin_tape/$_[0]);
         $drv{"name"} = $_[0];
         #print "get_drv:\t name: $_[0]\n" if $debug;
 	$line =~ /(IBMtape\d+$)/ or return %drv;	# sprawdzam tylko napędy bez "n" na końcu
@@ -34,7 +52,7 @@ sub get_drv($)				# Buduje hash z atrybut->wartość dla zadanego napedu
 	$line = qx(ls -l /dev/$real_name);
 	(undef,undef,undef,undef,undef,my $drv_no, undef) = split($line);
 	$drv{"drv_no"} = $drv_no;
-        open(ATTRS, "/usr/sbin/udevadm info --attribute-walk --name /dev/$real_name|") or die "Nie mogę uruchmić udevadm na urządzeniu $real_name.\n";
+        open(ATTRS, "$udev info --attribute-walk --name /dev/$real_name|") or die "Nie mogę uruchmić udevadm na urządzeniu $real_name.\n";
         while(($line=<ATTRS>) !~ /ww_node_name}=="0x(\w+)"/ )
         {
                 next;                   # pomijanie pierwszych kilku linijek, aż trafię na ww_node_name
@@ -84,7 +102,7 @@ sub get_tape_drvs()			# Buduje hash of hash
 {
 	my %drvs;
         my %drv;
-	open(DRVS, "ls /dev/lin_tape/by-id/|") or die "Nie mogę otworzyć listy napędów.\n";
+	open(DRVS, "ls /dev/lin_tape/|") or die "Nie mogę otworzyć listy napędów.\n";
 	while(<DRVS>)
 	{
 		chomp;

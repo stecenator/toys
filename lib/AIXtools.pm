@@ -3,23 +3,14 @@ use strict;
 use warnings;
  
 use Exporter qw(import);
+use Cwd  qw(abs_path);
+use lib '../lib';
+# Moduły do dołączenia w razie potrzeby. Powinny być zlokalizaowane w ../lib względem katalogu z którego jest uruchamiany skrypt
+use Gentools qw(dbg verb);
  
 our @EXPORT_OK = qw(get_fc_adapters get_tape_drvs $debug $verbose get_disks);
-our ($debug, $verbose);
-$debug=0;
-$verbose=0;
-
-sub dbg($$)
-# Komunikat do wyświetlenia, jesli jest włączony tryb debug.
-{
-	print "$_[0]:\t$_[1]" if $debug;
-}
-
-sub verbose($)
-# Komunikat do wyświetlenia, jesli jest włączony tryb debug.
-{
-	print "$_[0]" if $verbose or $debug;
-}
+my $debug=0;
+my $verbose=0;
 
 sub get_disk_serial($)
 # Zwraca serial LUNu z lscfg

@@ -2,24 +2,29 @@ package LNXtools;
 use strict;
 use warnings;
 use Exporter qw(import);
+use Cwd  qw(abs_path);
+use lib '../lib';
+
+# Moduły do dołączenia w razie potrzeby. Powinny być zlokalizaowane w ../lib względem katalogu z któ©ego jest uruchamiany skrypt
+use Gentools qw(dbg verb);
 
 our @EXPORT_OK = qw(get_fc_adapters get_tape_drvs $debug $verbose init_module);
-our ($debug, $verbose);
-our $debug=0;
-our $verbose=0;
+my $debug=0;
+my $verbose=0;
 our $udev;
+our $distro;				# Distro na jakim działam. Może się przydać.
 
-sub dbg($$)
-# Komunikat do wyświetlenia, jesli jest włączony tryb debug.
-{
-	print "$_[0]:\t$_[1]" if $debug;
-}
+#~ sub dbg($$)
+#~ # Komunikat do wyświetlenia, jesli jest włączony tryb debug.
+#~ {
+	#~ print "$_[0]:\t$_[1]" if $debug;
+#~ }
 
-sub verbose($)
-# Komunikat do wyświetlenia, jesli jest włączony tryb debug.
-{
-	print "$_[0]" if $verbose or $debug;
-}
+#~ sub verbose($)
+#~ # Komunikat do wyświetlenia, jesli jest włączony tryb debug.
+#~ {
+	#~ print "$_[0]" if $verbose or $debug;
+#~ }
 
 sub init_module()
 # Inicjalizacja rożnych rzeczy któ©e rożnią się pomiędzy dystrybucjami

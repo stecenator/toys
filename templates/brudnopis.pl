@@ -12,13 +12,13 @@ use Cwd  qw(abs_path);
 use lib '../lib';
 
 # Moduły do dołączenia w razie potrzeby. Powinny być zlokalizaowane w ../lib względem katalogu z któ©ego jest uruchamiany skrypt
-use Gentools qw(dbg verbose key_for_val_like);
-#use LNXtools;
+use Gentools qw(dbg verb key_for_val_like);
+use LNXtools;
 #use AIXtools;
 #use ISPtools;
 # Zmienne globalne 
-our $debug = 1;
-our $verbose = 1;
+my $debug = 1;
+my $verbose = 1;
 our %opts;				# Hash dla getopts
 our $my_name = $0;			# Żeby skrypt wiedział jak się nazywa
 
@@ -48,6 +48,7 @@ sub setup()
 		$debug = 1;
 		# Tutaj inicjalizacja $debug we wszystkich włączonych modułach.
 		$Gentools::debug = 1;
+		$LNXtools::debug = 1;
 		dbg("MAIN::setup","Włączono tryb debug.\n");
 	}
 	
@@ -61,7 +62,7 @@ sub setup()
 	
 	if(defined $opts{"f"}) 
 	{ 
-		verbose("$my_name: Podano opcję -f ".$opts{"f"}."\n");
+		verb("$my_name: Podano opcję -f ".$opts{"f"}."\n");
 		dbg("MAIN::setup","$my_name: Podano opcję -f ".$opts{"f"}."\n");
 	}
 	
@@ -70,10 +71,4 @@ sub setup()
 # main
 setup();
 
-my %hash = (
-	"234" => "Replication",
-	"1009" => "Backup database",
-	"34" => "Expire Inventory"
-);
 
-key_for_val_like("Repl", %hash);

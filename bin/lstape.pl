@@ -21,13 +21,13 @@ use Cwd  qw(abs_path);
 use lib '../lib';
 
 # Moduły do dołączenia w razie potrzeby. Powinny być zlokalizaowane w ../lib względem katalogu z któ©ego jest uruchamiany skrypt
-use Gentools qw(dbg verbose chkos);
+use Gentools qw(dbg verb chkos);
 use LNXtools;
 use AIXtools;
 #use ISPtools;
 # Zmienne globalne 
-our $debug = 1;
-our $verbose = 1;
+my $debug = 1;
+my $verbose = 1;
 our %opts;				# Hash dla getopts
 our $my_name = $0;			# Żeby skrypt wiedział jak się nazywa
 our $os;
@@ -48,7 +48,7 @@ sub setup()
 # Ogólne parsowanie wiersza poleceń
 # Parmaetry wywołania według opisu w z help();
 {
-	getopts("vdhfct:",\%opts) or help(2);
+	getopts("vdhct",\%opts) or help(2);
 	
 	if(defined $opts{"h"})
 	{
@@ -70,19 +70,21 @@ sub setup()
 		$verbose =1;
 		# Tutaj inicjalizacja $verbose we wszystkich włączonych modułach.
 		$Gentools::verbose = 1;
+		$LNXtools::verbose = 1;
+		$AIXtools::verbose = 1;
 		dbg("MAIN::setup","Włączono tryb verbose.\n");
-	}
-	
-	if(defined $opts{"f"}) 
-	{ 
-		verbose("$my_name: Podano opcję -f ".$opts{"f"}."\n");
-		dbg("MAIN::setup","$my_name: Podano opcję -f ".$opts{"f"}."\n");
 	}
 	
 	if(defined $opts{"c"})
 	{
 		dbg("MAIN::setup", "$my_name: wydruk w trybie comma.\n");
 		$mode = "comma";
+	}
+
+	if(defined $opts{"t"})
+	{
+		dbg("MAIN::setup", "$my_name: wydruk w trybie tab.\n");
+		$mode = "tab";
 	}
 }
 
@@ -102,7 +104,7 @@ elsif ($os eq "AIX")
 	%rmt = AIXtools::get_tape_drvs();
 }
 
-if ( %rmt == ())
+if ( !%rmt)
 {
 	dbg("MAIN", "Nie znaleziono żadnych napędów taśmowych.\n");
 	exit 1;
@@ -119,7 +121,7 @@ else
 	}
 	else
 	{
-		dbg("MAIN", "Wydruk w humen-friendly.\n");
+		dbg("MAIN", "Wydruk w human-friendly.\n");
 	}
 	
 	exit 0;

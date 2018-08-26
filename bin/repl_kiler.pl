@@ -10,15 +10,15 @@ use Getopt::Std;
 use File::Basename qw(dirname);
 use Cwd  qw(abs_path);
 use lib "$ENV{HOME}/prog/toys/lib/";
-use Gentools qw(dbg verbose print_hash key_for_val_like);		# Żeby mieć funkcie verbose i dbg
+use Gentools qw(dbg verb print_hash key_for_val_like);		# Żeby mieć funkcie verbose i dbg
 #use LNXtools;
 #use AIXtools;
 use ISPtools;				# Funkcje do dłubania w TSMie
 # Zmienne globalne 
 our %opts;				# Hash dla getopts
 our $my_name = $0;			# Żeby skrypt wiedział jak się nazywa
-our $debug = 1;
-our $verbose = 1;
+my $debug = 1;
+my $verbose = 1;
 our $admin = "admin";
 our $pass = "admin";
 our $server = "";

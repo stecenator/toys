@@ -101,6 +101,7 @@ if ($os eq "Linux")
 }
 elsif ($os eq "AIX")
 {
+	AIXtools::init_module();
 	%rmt = AIXtools::get_tape_drvs();
 }
 

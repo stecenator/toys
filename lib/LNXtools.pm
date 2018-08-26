@@ -14,20 +14,9 @@ my $verbose=0;
 our $udev;
 our $distro;				# Distro na jakim działam. Może się przydać.
 
-#~ sub dbg($$)
-#~ # Komunikat do wyświetlenia, jesli jest włączony tryb debug.
-#~ {
-	#~ print "$_[0]:\t$_[1]" if $debug;
-#~ }
-
-#~ sub verbose($)
-#~ # Komunikat do wyświetlenia, jesli jest włączony tryb debug.
-#~ {
-	#~ print "$_[0]" if $verbose or $debug;
-#~ }
 
 sub init_module()
-# Inicjalizacja rożnych rzeczy któ©e rożnią się pomiędzy dystrybucjami
+# Inicjalizacja rożnych rzeczy które rożnią się pomiędzy dystrybucjami
 # Zwrotki:
 #	0 - wszystko ok
 #	1 - nie udało się znaleźć udevadm

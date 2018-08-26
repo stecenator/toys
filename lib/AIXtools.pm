@@ -8,9 +8,16 @@ use lib '../lib';
 # Moduły do dołączenia w razie potrzeby. Powinny być zlokalizaowane w ../lib względem katalogu z którego jest uruchamiany skrypt
 use Gentools qw(dbg verb);
  
-our @EXPORT_OK = qw(get_fc_adapters get_tape_drvs $debug $verbose get_disks);
+our @EXPORT_OK = qw(get_fc_adapters get_tape_drvs get_disks);
 my $debug=0;
 my $verbose=0;
+
+sub init_module()
+# Inicjalizacja zmiennych modułu
+{
+	dbg("AIXtools::init_module", "Inicjalizacja zmiennych modułu.\n");
+	return 0;
+}
 
 sub get_disk_serial($)
 # Zwraca serial LUNu z lscfg

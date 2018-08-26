@@ -108,4 +108,11 @@ sub key_for_val_like($%)
 	}
 } 
 
+sub init_module()
+# Ogólny stuff inicjalizacyjny.
+{
+	dbg("Gentools::init_module", "inicjalizacja zmiennych modułu.\n");
+	return 0;
+}
+
 1;		# Bo tak kurwa ma być

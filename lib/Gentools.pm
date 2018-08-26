@@ -5,7 +5,7 @@ use warnings;
 use Exporter qw(import);
 our $debug = 0;                 						# do rozjechania przez Gentools::debug=1 w module wołającym
 our $verbose=0;
-our @EXPORT_OK = qw(chkos get_hostname show_drv print_hash $verbose $debug dbg verbose yes_no key_for_val_like);
+our @EXPORT_OK = qw(chkos get_hostname show_drv print_hash $verbose $debug dbg verb yes_no key_for_val_like);
 
 
 
@@ -15,7 +15,7 @@ sub dbg($$)
 	print "$_[0]:\t$_[1]" if $debug;
 }
 
-sub verbose($)
+sub verb($)
 # Komunikat do wyświetlenia, jesli jest włączony tryb debug.
 {
 	print "$_[0]" if $verbose;
@@ -60,7 +60,7 @@ sub show_drv(%)                 # debugowa funkcja wyświetlająca hasha pojedyn
         }
 }
 
-sub chkos {
+sub chkos() {
 	(my $os, my $rest) = split(" ", qx/uname -a/);
         return "$os";
 }
@@ -107,5 +107,12 @@ sub key_for_val_like($%)
 		}
 	}
 } 
+
+sub init_module()
+# Ogólny stuff inicjalizacyjny.
+{
+	dbg("Gentools::init_module", "inicjalizacja zmiennych modułu.\n");
+	return 0;
+}
 
 1;		# Bo tak kurwa ma być

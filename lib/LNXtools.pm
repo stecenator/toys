@@ -2,28 +2,40 @@ package LNXtools;
 use strict;
 use warnings;
 use Exporter qw(import);
- 
-our @EXPORT_OK = qw(get_fc_adapters get_tape_drvs $debug $verbose);
-our ($debug, $verbose);
-$debug=0;
-$verbose=0;
+use Cwd  qw(abs_path);
+use lib '../lib';
 
-sub dbg($$)
-# Komunikat do wyświetlenia, jesli jest włączony tryb debug.
-{
-	print "$_[0]:\t$_[1]" if $debug;
-}
+# Moduły do dołączenia w razie potrzeby. Powinny być zlokalizaowane w ../lib względem katalogu z któ©ego jest uruchamiany skrypt
+use Gentools qw(dbg verb);
 
-sub verbose($)
-# Komunikat do wyświetlenia, jesli jest włączony tryb debug.
+our @EXPORT_OK = qw(get_fc_adapters get_tape_drvs $debug $verbose init_module);
+my $debug=0;
+my $verbose=0;
+our $udev;
+our $distro;				# Distro na jakim działam. Może się przydać.
+
+
+sub init_module()
+# Inicjalizacja rożnych rzeczy które rożnią się pomiędzy dystrybucjami
+# Zwrotki:
+#	0 - wszystko ok
+#	1 - nie udało się znaleźć udevadm
 {
-	print "$_[0]" if $verbose or $debug;
+	$udev = qx(which udevadm);
+	my $rc = $? >> 8;
+	my $ret = 0;
+	
+	dbg("LNXtools::init_module", "Wywołanie: \'which udevadm\' zakończone z kodem wyjścia $rc\n");
+	
+	$ret = 1 if $rc == 1;						# which nie znalzało udevadm
+	
+	return ($ret);
 }
 
 sub get_drv($)				# Buduje hash z atrybut->wartość dla zadanego napedu
 {
 	my %drv=();
-	my $line = qx(ls -l /dev/lin_tape/by-id/$_[0]);
+	my $line = qx(ls -l /dev/lin_tape/$_[0]);
         $drv{"name"} = $_[0];
         #print "get_drv:\t name: $_[0]\n" if $debug;
 	$line =~ /(IBMtape\d+$)/ or return %drv;	# sprawdzam tylko napędy bez "n" na końcu
@@ -34,7 +46,7 @@ sub get_drv($)				# Buduje hash z atrybut->wartość dla zadanego napedu
 	$line = qx(ls -l /dev/$real_name);
 	(undef,undef,undef,undef,undef,my $drv_no, undef) = split($line);
 	$drv{"drv_no"} = $drv_no;
-        open(ATTRS, "/usr/sbin/udevadm info --attribute-walk --name /dev/$real_name|") or die "Nie mogę uruchmić udevadm na urządzeniu $real_name.\n";
+        open(ATTRS, "$udev info --attribute-walk --name /dev/$real_name|") or die "Nie mogę uruchmić udevadm na urządzeniu $real_name.\n";
         while(($line=<ATTRS>) !~ /ww_node_name}=="0x(\w+)"/ )
         {
                 next;                   # pomijanie pierwszych kilku linijek, aż trafię na ww_node_name
@@ -84,7 +96,7 @@ sub get_tape_drvs()			# Buduje hash of hash
 {
 	my %drvs;
         my %drv;
-	open(DRVS, "ls /dev/lin_tape/by-id/|") or die "Nie mogę otworzyć listy napędów.\n";
+	open(DRVS, "ls /dev/lin_tape/|") or die "Nie mogę otworzyć listy napędów.\n";
 	while(<DRVS>)
 	{
 		chomp;

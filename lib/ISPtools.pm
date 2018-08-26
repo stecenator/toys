@@ -5,7 +5,7 @@ use warnings;
 use Exporter qw(import);
 our $debug = 0;                 						# do rozjechania przez Gentools::debug=1 w module wołającym
 our $verbose=0;
-our @EXPORT = qw(init_ISPtools get_process_list);
+our @EXPORT = qw(init_module get_process_list);
 our ($admin, $pass, $host);
 my $cmd="dsmadmc ";
 
@@ -40,7 +40,7 @@ sub get_process_list()
 	return %ret;
 }
 
-sub init_ISPtools($$$$$)
+sub init_module($$$$$)
 # Funkcja inicjalizacji zmiennych modułu: $host, $admin, $pass, $debug, $verbose
 #   Konstruuje zmienną $cmd które zawiera część wspólną do wywałoania dsmamdc (Uwierzytelnienie, dataonly, itd)
 #   Zwrotka - brak. W razie błędu zatrzyma program.
@@ -70,7 +70,7 @@ sub init_ISPtools($$$$$)
 	}
 	
 	$cmd=$cmd.$tmp_cmd." -id=$admin -pa=$pass -dataonly=yes -tab ";
-	dbg("ISPtool::init_ISPtools","Komenda do zarządzania ISP: $cmd.\n");
+	dbg("ISPtool::init_module","Komenda do zarządzania ISP: $cmd.\n");
 }
 
 sub dbg($$)

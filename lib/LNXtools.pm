@@ -62,7 +62,7 @@ sub get_drv($)				# Buduje hash z atrybut->wartość dla zadanego napedu
 	$drv{"drv_no"} = $drv_no;
 	
         open(ATTRS, "$udev info --attribute-walk --name /dev/$real_name|") or die "Nie mogę uruchmić udevadm na urządzeniu $real_name.\n";
-        dbg("LNXtools:get_drv", "Pobieranie atrybutów napędu $real_name komendą: $udev info --attribute-walk --name /dev/$real_name\n");
+        dbg("LNXtools::get_drv", "Pobieranie atrybutów napędu $real_name komendą: $udev info --attribute-walk --name /dev/$real_name\n");
         
         while($line=<ATTRS>) 
         {
@@ -105,14 +105,15 @@ sub get_drv($)				# Buduje hash z atrybut->wartość dla zadanego napedu
 	return %drv;
 }
 
-sub get_tape_drvs()			# Buduje hash of hash
+sub get_tape_drvs()			# Buduje hash of hash z napędami. Indeksem jest SERIAL napędu.
 # drvs{SERIAL}
 #	alt_pathing - 1|0
 #	FW - firmware
 #	WWNN - wwnn
-#	names - (nazwa_pri, nazwa_alt1, nazwa_alt2, ...)
+#	name - primary name
+#	alt_names - (nazwa_alt1, nazwa_alt2, ...)
 #	drv_no - (numer_pri, numer_alt1, ...)
-#	elems - (elem_pri, elem_alt1, ...)
+#	elems - (elem_pri, elem_alt1, ...) --- Tego nie ma 
 #	WWPN - (WWPN_pri, WWPN_alt1, ...)
 {
 	my %drvs;
@@ -121,24 +122,31 @@ sub get_tape_drvs()			# Buduje hash of hash
 	while(<DRVS>)
 	{
 		chomp;
-		# print "get_tape_drvs:\t Napęd: $_\n" if $debug;
 		%drv = get_drv($_);
-		if(%drv) 		# dostałem pustego hasha
+		if(%drv) 		# Dostałem napęd
 		{
-                        $drvs{"$_"} = %drv;
-                        print "get_tape_drvs:\tNazwa napędu: $drv{'name'}\n"
+			my $serial = $drv{"serial"};		# zbędne ale łatwiej
+			if( grep /^$serial$/, keys(%drv) )	# Sprawdzam, czy już mam napęd o takiej nazwie, bo jeśli tak to może złapałem kojeną scieżkę do niego ? 
+			{
+				dbg("LNXtools:get_tape_drvs", "Napęd $serial już jest na lisćie. Dodawanie nowej ścieżki.\n");
+				$drvs{"$serial"}{"alt_pathing"} = 1;
+			}
+			else				# Napędu jeszcze nie widziałem. Dodawanie unikalnych atrybutów
+			{
+				dbg("LNXtools:get_tape_drvs", "Dodawanie nowego napędu $serial do listy.\n");
+				$drvs{"$serial"}{"alt_pathing"} = 0;
+				$drvs{"$serial"}{"WWNN"} = $drv{"WNN"};
+				$drvs{"$serial"}{"name"} = $drv{"name"};
+				$drvs{"$serial"}{"FW"} = $drv{"FW"};
+				$drvs{"$serial"}{"model"} = $drv{"model"};
+			}
+			
+			# dodawanie wspólnych atrybutów zarówno dla nowego jak i istniejącego na liscie napędu
+			push @{$drvs{"$serial"}{"real_names"}}, $drv{"real_name"};
+			push @{$drvs{"$serial"}{"WWPN"}}, $drv{"WWPN"};
 		}
-                else
-                {
-                        print "get_tape_drvs:\t Urządzenie $_ nie jest napędem taśmowym?\n" if $debug;
-                        if($drv{'alt_pathing'} eq "Primary")
-                        {
- 
-                        }
-                        next;
-                }
-		
 	}
+	
 	close(DRVS);
 	return %drvs;
 }

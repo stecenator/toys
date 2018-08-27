@@ -1,3 +1,11 @@
+#  _____________________________________________________________________________
+# |                                                                             |
+# |    Moduł obsługi systemu Linux w skryptach toys                             |
+# |    Kody wyjścia ze skryptu generowane w systuacjach awaryjnych tego API     |
+# |    100 - nie znalezione udevadm  ( nie używane, init_tool zwaraca 1 )       |
+# |    101 - nie wywołano init_module                                           |
+# |_____________________________________________________________________________|
+
 package LNXtools;
 use strict;
 use warnings;
@@ -6,7 +14,7 @@ use Cwd  qw(abs_path);
 use lib '../lib';
 
 # Moduły do dołączenia w razie potrzeby. Powinny być zlokalizaowane w ../lib względem katalogu z któ©ego jest uruchamiany skrypt
-use Gentools qw(dbg verb);
+use Gentools qw(dbg verb error);
 
 our @EXPORT_OK = qw(get_fc_adapters get_tape_drvs $debug $verbose init_module);
 my $debug=0;
@@ -27,8 +35,8 @@ sub init_module()
 	
 	dbg("LNXtools::init_module", "Wywołanie: \'which udevadm\' zakończone z kodem wyjścia $rc\n");
 	
-	$ret = 1 if $rc == 1;						# which nie znalzało udevadm
-	
+	$ret = 1 if $rc == 1;		# which nie znalzało udevadm
+	chomp $udev;			# Bo się chrzani przy dodaniu argumentów
 	return ($ret);
 }
 
@@ -36,8 +44,14 @@ sub get_drv($)				# Buduje hash z atrybut->wartość dla zadanego napedu
 {
 	my %drv=();
 	my $line = qx(ls -l /dev/lin_tape/$_[0]);
+	
+	if($udev eq "")			# Nie wywołano init_module
+	{
+		error("LNXtools::get_drv", "Nie ustawiono lokalizacji udevadm.\n", 101);
+	}
+	
         $drv{"name"} = $_[0];
-        #print "get_drv:\t name: $_[0]\n" if $debug;
+        
 	$line =~ /(IBMtape\d+$)/ or return %drv;	# sprawdzam tylko napędy bez "n" na końcu
 	my $real_name = $1;
         $drv{"real_name"} = $real_name;
@@ -46,41 +60,48 @@ sub get_drv($)				# Buduje hash z atrybut->wartość dla zadanego napedu
 	$line = qx(ls -l /dev/$real_name);
 	(undef,undef,undef,undef,undef,my $drv_no, undef) = split($line);
 	$drv{"drv_no"} = $drv_no;
+	
         open(ATTRS, "$udev info --attribute-walk --name /dev/$real_name|") or die "Nie mogę uruchmić udevadm na urządzeniu $real_name.\n";
-        while(($line=<ATTRS>) !~ /ww_node_name}=="0x(\w+)"/ )
+        dbg("LNXtools:get_drv", "Pobieranie atrybutów napędu $real_name komendą: $udev info --attribute-walk --name /dev/$real_name\n");
+        
+        while($line=<ATTRS>) 
         {
-                next;                   # pomijanie pierwszych kilku linijek, aż trafię na ww_node_name
-        }
-        $line =~ /ww_node_name}=="0x(\w+)"/;    # bo while nie ustawił $1
-        #print "get_drv:\t WWNN: $1\n" if $debug;
-        $drv{"WWNN"} = $1;
-        $line = <ATTRS>;                # tu się spodziwam seriala
-        $line =~ /serial_num}=="(\w+)"/;
-        #print "get_drv:\t Serial: $1\n" if $debug;
-        $drv{"serial"} = $1;
-        $line = <ATTRS>;                # alt pathing
-        $line =~ /primary_path}=="(\w+)"/;
-        #print "get_drv:\t alt_pathing: $1\n" if $debug;
-        $drv{"alt_path"} = $1;
-        $line = <ATTRS>;                # WWPN
-        $line =~ /ww_port_name}=="0x(\w+)"/;
-        #print "get_drv:\t WWPN: $1\n" if $debug;
-        $drv{"WWPN"} = $1;
-        while(($line=<ATTRS>) !~ /rev}=="(\w+)"/ )
-        {
-                next;                   # pomijanie kolejnych kilku linijek, aż trafię na ww_node_name
-        }
-        $line =~ /rev}=="(\w+)"/;       # wersja firmłeru
-        #print "get_drv:\t FW: $1\n" if $debug;
-        $drv{"FW"} = $1;
-        while(($line=<ATTRS>) !~ /model}=="(\S+) *"/ )
-        {
-                next;                   # pomijanie kolejnych kilku linijek, aż trafię na ww_node_name
-        }
-        $line =~ /model}=="(\S+) *"/;   # model napędu
-        #print "get_drv:\t model: $1\n" if $debug;
-        $drv{"model"} = $1;
+		if ( $line =~ /ww_node_name}=="0x(\w+)"/ )	# Znaleziono WWNN
+		{
+			dbg("LNXtools::get_drv", "Napęd $real_name, WWNN $1\n");
+			$drv{"WWNN"} = $1;
+		}
+		elsif ( $line =~ /serial_num}=="(\w+)"/ )	# Srial napędu
+		{
+			dbg("LNXtools::get_drv", "Napęd $real_name, Serial $1\n");
+			$drv{"serial"} = $1;
+		}
+		elsif ( $line =~ /primary_path}=="(\w+)"/ )	# alt_pathing
+		{
+			dbg("LNXtools::get_drv", "Napęd $real_name, alt_path $1\n");
+			$drv{"alt_path"} = $1;
+		}
+		elsif ( $line =~ /ww_port_name}=="0x(\w+)"/ )	# WWPN
+		{
+			dbg("LNXtools::get_drv", "Napęd $real_name, WWPN $1\n");
+			$drv{"WWPN"} = $1;
+		}
+		elsif ( $line =~ /rev}=="(\w+)"/ )		# Wersja Firmware
+		{
+			dbg("LNXtools::get_drv", "Napęd $real_name, FW $1\n");
+			$drv{"FW"} = $1;
+		}
+		elsif ( $line =~ /model}=="(\S+) *"/ )		# Model Napędu
+		{
+			dbg("LNXtools::get_drv", "Napęd $real_name, Model $1\n");
+			$drv{"model"} = $1;
+		}
+		
+		next;
+	}
+       
         close(ATTRS);
+        
 	return %drv;
 }
 

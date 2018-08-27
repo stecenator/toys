@@ -5,9 +5,19 @@ use warnings;
 use Exporter qw(import);
 our $debug = 0;                 						# do rozjechania przez Gentools::debug=1 w module wołającym
 our $verbose=0;
-our @EXPORT_OK = qw(chkos get_hostname show_drv print_hash $verbose $debug dbg verb yes_no key_for_val_like);
+our @EXPORT_OK = qw(chkos get_hostname show_drv print_hash $verbose $debug dbg verb yes_no key_for_val_like error);
 
-
+sub error($$$)
+# Komunikat o błędzie, na STDERR. Jeśli ma niezerowy kod wyjścia 
+# Argumenty
+# $_[0] - Kto zgłasza" - moduł::procedura
+# $_[1] - Treść błędu" 
+# $_[2] - Kod wyjścia - jesli nie 0 to zakończy program z podanym kodem.
+{
+	print STDERR "$_[0]:"." $_[1]";
+	
+	exit $_[2] if ( $_[2] != 0 );
+}
 
 sub dbg($$)
 # Komunikat do wyświetlenia, jesli jest włączony tryb debug.

@@ -21,7 +21,7 @@ use Cwd  qw(abs_path);
 use lib '../lib';
 
 # Moduły do dołączenia w razie potrzeby. Powinny być zlokalizaowane w ../lib względem katalogu z któ©ego jest uruchamiany skrypt
-use Gentools qw(dbg verb chkos);
+use Gentools qw(dbg verb chkos print_hash_human);
 use LNXtools;
 use AIXtools;
 #use ISPtools;
@@ -123,6 +123,7 @@ else
 	else
 	{
 		dbg("MAIN", "Wydruk w human-friendly.\n");
+		print_hash_human( %rmt );
 	}
 	
 	exit 0;

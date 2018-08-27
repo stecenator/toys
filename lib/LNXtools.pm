@@ -107,7 +107,7 @@ sub get_drv($)				# Buduje hash z atrybut->wartość dla zadanego napedu
 
 sub get_tape_drvs()			# Buduje hash of hash z napędami. Indeksem jest SERIAL napędu.
 # drvs{SERIAL}
-#	alt_pathing - 1|0
+#	alt_pathing - y|n
 #	FW - firmware
 #	WWNN - wwnn
 #	name - primary name
@@ -129,13 +129,13 @@ sub get_tape_drvs()			# Buduje hash of hash z napędami. Indeksem jest SERIAL na
 			if( grep /^$serial$/, keys(%drv) )	# Sprawdzam, czy już mam napęd o takiej nazwie, bo jeśli tak to może złapałem kojeną scieżkę do niego ? 
 			{
 				dbg("LNXtools:get_tape_drvs", "Napęd $serial już jest na lisćie. Dodawanie nowej ścieżki.\n");
-				$drvs{"$serial"}{"alt_pathing"} = 1;
+				$drvs{"$serial"}{"alt_pathing"} = "y";
 			}
 			else				# Napędu jeszcze nie widziałem. Dodawanie unikalnych atrybutów
 			{
 				dbg("LNXtools:get_tape_drvs", "Dodawanie nowego napędu $serial do listy.\n");
-				$drvs{"$serial"}{"alt_pathing"} = 0;
-				$drvs{"$serial"}{"WWNN"} = $drv{"WNN"};
+				$drvs{"$serial"}{"alt_pathing"} = "n";
+				$drvs{"$serial"}{"WWNN"} = $drv{"WWNN"};
 				$drvs{"$serial"}{"name"} = $drv{"name"};
 				$drvs{"$serial"}{"FW"} = $drv{"FW"};
 				$drvs{"$serial"}{"model"} = $drv{"model"};

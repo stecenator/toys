@@ -102,7 +102,46 @@ sub print_hash(%)
         }
 }
 
-sub print_hash_human(\%;$);					# prototyp, bo bez tego perl gubi się przy rekurencji
+sub print_hash_csv(\%$;$);					# prototyp, bo bez tego perl gubi się przy rekurencji
+sub print_hash_csv(\%$;$)
+# Wypisuje hash z @_  w formie stanzowej. W razie potrzeby woła się rekurencyjnie
+# Argumenty:
+# \%hash_ref - refrencja do wypisywanego hasha
+# $delim - deliminator do CSV - uwaga, listy w polach są na sztywno deliminowane ";"
+# $level - opcjonalny, oznaczający poziom zagnieżdzenie rekurencji 
+{	
+	my $hash_ref = shift;
+	my $level = shift;					# liczba \t przed wypisanymi wartościami
+	my $line;						# do sklejania array
+	
+	if( !$level )
+	{
+		dbg("Gentools::print_hash_csv", "Nie podano poziomu zagłębienia rekurencji. Domyslne: 0.\n");
+		$level = 0;
+	}
+	
+        foreach my $key (keys %{$hash_ref})
+        {
+		if ( ref ${$hash_ref}{"$key"} eq "HASH" )	# wartością dla klucza jest kolejny hash
+		{
+			print "\t"x$level."$key:\n";
+			print_hash_human( %{${$hash_ref}{$key}}, $level + 1 );
+		}
+		elsif ( ref ${$hash_ref}{$key} eq "ARRAY" )	# wartością dla klucza jest tablica
+		{
+			$line = join ', ', @{${$hash_ref}{$key}};
+			print "\t"x$level."$key:\t$line\n";
+		}
+		else 						# Pod $key siedzi zwykły skalar albo jest pusty
+		{
+			print "\t"x$level."$key:\t";
+			print "${$hash_ref}{$key}" if ${$hash_ref}{$key}; # Żeby ładnie reagował na klucz bez wartości
+			print "\n";
+		}
+	}
+}
+
+sub print_hash_csv(\%;$);					# prototyp, bo bez tego perl gubi się przy rekurencji
 sub print_hash_human(\%;$)
 # Wypisuje hash z @_  w formie stanzowej. W razie potrzeby woła się rekurencyjnie
 # Argumenty:

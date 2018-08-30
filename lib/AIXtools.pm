@@ -66,6 +66,12 @@ sub get_disks()
 	return %ret;
 }
 
+sub get_drv($)				# Buduje hash z atrybut->wartość dla zadanego napedu
+{
+	my %drv=();
+	my $line = qx(ls -l /dev/lin_tape/$_[0]);
+}
+
 sub get_tape_drvs()
 {
 	my %drvs;

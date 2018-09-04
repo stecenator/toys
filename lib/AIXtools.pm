@@ -36,7 +36,7 @@ sub get_disk_serial($)
 		if( $line=~/Serial Number...............(.*)/ )
 		{
 			$ret=$1;
-			dbg("get_disk_serial","Serial dysku $_[0]: $ret\n");
+			dbg("AIXtools::get_disk_serial","Serial dysku $_[0]: $ret\n");
 			last;
 		}
 	}
@@ -68,14 +68,104 @@ sub get_disks()
 
 sub get_drv($)				# Buduje hash z atrybut->wartość dla zadanego napedu
 {
-	my %drv=();
-	my $line = qx(ls -l /dev/lin_tape/$_[0]);
+	my $d = shift;
+	my %drv= ( "name" => "$d" );
+	
+	#~ my $line = qx(lsattr -El $_[0]);
+	open(DRV, "lsattr -El $d -F attribute,value |") or die "Nie można pobrać atrybutów napędu $d.\n";
+	
+	while(<DRV>)
+	{
+		chomp;
+		(my $attr, my $val) = split /,/;
+		
+		if( $attr eq "alt_pathing" )
+		{
+			$drv{"$attr"} = substr $val, 0, 1;
+		}
+		elsif ( $attr eq "primary_device" ) 
+		{
+			$drv{"real_name"} = $val;
+		}
+		elsif ( $attr eq "ww_name" ) 
+		{
+			$drv{"WWPN"} = substr $val, 2;
+		}
+		elsif ( $attr eq "node_name" ) 
+		{
+			$drv{"WWNN"} = substr $val, 2;
+		}
+	}
+	
+	close(DRV);
+	
+	open (DRV, "lscfg -vl $d|") or die "Nie można wykonać lscfg -vl $d.\n";
+	
+	while(<DRV>)
+	{
+		if ( /Serial Number...............(.*)$/ )
+		{
+			$drv{"serial"} = "$1";
+		}
+		elsif ( /Device Specific.\(FW\)........(.*)$/ )
+		{
+			$drv{"FW"} = $1;
+		}
+		elsif ( /Machine Type and Model......(.*)$/ )
+		{
+			$drv{"model"} = $1;
+		}
+	}
+	
+	close(DRV);
+	
+	return %drv;
 }
 
 sub get_tape_drvs()
+# drvs{SERIAL}
+#	alt_pathing - y|n
+#	FW - firmware
+#	WWNN - wwnn
+#	name - primary name
+#	alt_names - (nazwa_alt1, nazwa_alt2, ...)
+#	drv_no - (numer_pri, numer_alt1, ...)
+#	elems - (elem_pri, elem_alt1, ...) --- Tego nie ma 
+#	WWPN - (WWPN_pri, WWPN_alt1, ...)
 {
 	my %drvs;
-	return %drvs
+	my %drv;
+	open(DRVS, "lsdev -Cc tape|") or die "Nie mogę otworzyć listy napędów.\n";
+	
+	while(<DRVS>)
+	{
+		(my $d, undef,undef,undef,undef,undef,undef,undef,undef) = split;
+		%drv = get_drv($d);
+		if(%drv) 		# Dostałem napęd
+		{
+			my $serial = $drv{"serial"};		# zbędne ale łatwiej
+			
+			if( grep /^$serial$/, keys(%drv) )	# Sprawdzam, czy już mam napęd o takiej nazwie, bo jeśli tak to może złapałem kojeną scieżkę do niego ? 
+			{
+				dbg("AIXtools:get_tape_drvs", "Napęd $serial już jest na lisćie. Dodawanie nowej ścieżki.\n");
+				#~ $drvs{"$serial"}{"alt_pathing"} = "y";
+			}
+			else				# Napędu jeszcze nie widziałem. Dodawanie unikalnych atrybutów
+			{
+				dbg("AIXtools::get_tape_drvs", "Dodawanie nowego napędu $serial do listy.\n");
+				$drvs{"$serial"}{"alt_pathing"} = $drv{"alt_pathing"};
+				$drvs{"$serial"}{"WWNN"} = $drv{"WWNN"};
+				$drvs{"$serial"}{"name"} = $drv{"name"};
+				$drvs{"$serial"}{"FW"} = $drv{"FW"};
+				$drvs{"$serial"}{"model"} = $drv{"model"};
+			}
+			
+			# dodawanie wspólnych atrybutów zarówno dla nowego jak i istniejącego na liscie napędu
+			push @{$drvs{"$serial"}{"real_names"}}, $drv{"real_name"};
+			push @{$drvs{"$serial"}{"WWPN"}}, $drv{"WWPN"};
+		}
+	}
+	return %drvs;
 }
  
 sub get_fc_adapters() 		# Buduje hasha adapter_fc -> WWPN

@@ -141,7 +141,7 @@ sub print_hash_csv(\%$;$)
 	}
 }
 
-sub print_hash_csv(\%;$);					# prototyp, bo bez tego perl gubi się przy rekurencji
+sub print_hash_human(\%;$);					# prototyp, bo bez tego perl gubi się przy rekurencji
 sub print_hash_human(\%;$)
 # Wypisuje hash z @_  w formie stanzowej. W razie potrzeby woła się rekurencyjnie
 # Argumenty:

@@ -154,6 +154,13 @@ sub get_tape_drvs()			# Buduje hash of hash z napędami. Indeksem jest SERIAL na
 sub get_fc_adapters() 			# Buduje hasha adapter_fc -> WWPN
 {
 	my %fcs;
+	
+	if( ! -e "/sys/class/fc_host") 
+	{
+		dbg("LNXtools::get_fc_adapters", "Na tum hoscie nie ma kart FC.\n");
+		return ();
+	}
+	
 	open(FC, "ls /sys/class/fc_host/|") or die "Nie mogę załadować listy kart HBA.\n";
 	while(<FC>)
 	{

@@ -5,7 +5,7 @@ use warnings;
 use Exporter qw(import);
 our $debug = 0;                 						# do rozjechania przez Gentools::debug=1 w module wołającym
 our $verbose=0;
-our @EXPORT_OK = qw(chkos get_hostname show_drv print_hash $verbose $debug dbg verb yes_no key_for_val_like error print_hash_human);
+our @EXPORT_OK = qw(chkos get_hostname show_drv print_hash $verbose $debug dbg verb yes_no key_for_val_like error print_hash_human check_proc chk_usr_proc);
 
 sub error($$$)
 # Komunikat o błędzie, na STDERR. Jeśli ma niezerowy kod wyjścia 
@@ -94,6 +94,7 @@ sub print_array_hash(%)
 
 sub print_hash(%)
 {
+	error("Gentools:print_hash", "nieparzysta ilość lementów w tablicy argumentów. To prawdopodobnie nie jest hash!\n", 100) if (scalar @_ % 2) != 0; 
 	(my %hash) = @_;	
         foreach my $key (keys %hash)
         {
@@ -200,6 +201,39 @@ sub init_module()
 {
 	dbg("Gentools::init_module", "inicjalizacja zmiennych modułu.\n");
 	return 0;
+}
+
+sub check_proc($)
+# check_proc($nazwa) - sprawdza czy proces o danej nazwie jest uruchomiony
+{
+        if( `ps -C $_[0]` )
+        {
+                return 1;
+        }
+        else
+        {
+                return 0;
+        }
+}
+
+sub chk_usr_proc($$)
+# chk_usr_proc($user, $komenda) - sprawdza, czy $user ma proces $komenda
+{
+	my $line = qx/ps -C $_[1] -f/;
+	my $rc = $? >> 8;
+	
+	return 0 if ($rc != 0);			# nie ma prosu o tej nazwie
+	
+	(my $user, my $pid, undef) = split(" ", $line);
+	
+        if( "$user" eq $_[0] )			# User jest właścicielem procesu
+        {
+                return $pid;
+        }
+        else
+        {
+                return 0;
+        }
 }
 
 1;		# Bo tak kurwa ma być

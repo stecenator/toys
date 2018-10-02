@@ -98,7 +98,7 @@ sub print_hash(%)
         foreach my $key (keys %hash)
         {
 		#~ dbg("Gentools::print_hash", "Klucz: $key\n");
-                print "$key,".$hash{"$key"}."\n";
+                print "$key = ".$hash{"$key"}."\n";
         }
 }
 

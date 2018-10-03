@@ -71,18 +71,24 @@ sub start_ISP($$)
 		exit 17;							# Start TSM nieudany (kody opisane w ISP_Startup.pl)
 	}
 	
-	my @out = qx/$cmd/;
+	my @out = qx($cmd 2>/dev/null);
 	my $rc = $? >> 8;
-	print "Prewencyjne pójście spać na 20s ....";
+	
+	dbg("ISPtools::start_ISP", "Kody wyjścia z \"$cmd\" = $rc\n");
+	
 	sleep 20;
 	$pid = chk_usr_proc("$instuser", "dsmserv");
 	
-	if (($rc != 0) && ($pid <=0 ))	# Coś bardziej nie tak niż timeout systemclt 
+	if($pid > 0 )								# Serwer jednak żyje
 	{
-		error("ISPtools::start_ISP", "Kod powrotu z \"$cmd\" = $rc", 17);
+		verb("Serwer ISP działa. PID = $pid.\n");
+	}
+	else
+	{
+		error("\nISPtools::start_ISP", "Kod powrotu z \"$cmd\" = $rc\n", 17);
 	}
 	
-	dbg("ISPtools::start_ISP", "PID procesu dmserv $pid\n");
+	dbg("ISPtools::start_ISP", "PID serwera = $pid.\n");
 	
 	return $pid;
 }

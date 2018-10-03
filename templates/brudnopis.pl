@@ -12,7 +12,7 @@ use Cwd  qw(abs_path);
 use lib '../lib';
 
 # Moduły do dołączenia w razie potrzeby. Powinny być zlokalizaowane w ../lib względem katalogu z któ©ego jest uruchamiany skrypt
-use Gentools qw(dbg verb key_for_val_like);
+use Gentools qw(dbg verb key_for_val_like chk_usr_proc);
 use LNXtools;
 #use AIXtools;
 #use ISPtools;
@@ -70,5 +70,6 @@ sub setup()
 
 # main
 setup();
-
+my $pid = chk_usr_proc("marcinek", "geany");
+print "Geany ma pid $pid\n";
 

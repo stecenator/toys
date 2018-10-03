@@ -219,12 +219,13 @@ sub check_proc($)
 sub chk_usr_proc($$)
 # chk_usr_proc($user, $komenda) - sprawdza, czy $user ma proces $komenda
 {
-	my $line = qx/ps -C $_[1] -f/;
+	my @line = qx/ps -C $_[1] -f/;
 	my $rc = $? >> 8;
+	dbg("Gentools::chk_usr_proc", "RC z ps = $rc, output: $line[1]\n");
 	
 	return 0 if ($rc != 0);			# nie ma prosu o tej nazwie
 	
-	(my $user, my $pid, undef) = split(" ", $line);
+	(my $user, my $pid, undef) = split(" ", $line[1]);
 	
         if( "$user" eq $_[0] )			# User jest właścicielem procesu
         {

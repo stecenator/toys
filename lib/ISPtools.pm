@@ -7,7 +7,7 @@ use Gentools qw(chkos error verb dbg chk_usr_proc);
 use Exporter qw(import);
 our $debug = 0;                 						# do rozjechania przez Gentools::debug=1 w module wołającym
 our $verbose=0;
-our @EXPORT_OK = qw(init_module get_process_list start_ISP is_ISP_active);
+our @EXPORT_OK = qw(init_module get_process_list start_ISP is_ISP_active stop_ISP);
 our ($admin, $pass, $host);
 my $cmd="dsmadmc ";
 
@@ -79,11 +79,7 @@ sub start_ISP($$)
 	sleep 20;
 	$pid = chk_usr_proc("$instuser", "dsmserv");
 	
-	if($pid > 0 )								# Serwer jednak żyje
-	{
-		verb("Serwer ISP działa. PID = $pid.\n");
-	}
-	else
+	if($pid <= 0 )								# Serwer jednak żyje
 	{
 		error("\nISPtools::start_ISP", "Kod powrotu z \"$cmd\" = $rc\n", 17);
 	}
@@ -93,6 +89,29 @@ sub start_ISP($$)
 	return $pid;
 }
 
+sub stop_ISP()
+# Stopuje instancję serwera ISP na użytkowniku $_[0] z katalogiem instancji $_[1]
+# Zwrotki:
+#	1 - jeśli udało się zatrzymać serwer
+#	0 - nie udało się 
+{
+	my $tmp_cmd=$cmd."halt";
+	my %ret = ();
+	my @out = qx/$tmp_cmd/;
+	my $rc = $? >> 8;
+	
+	dbg("ISPtools::stop_ISP", "Wywołanie: $tmp_cmd zakończone z kodem wyjścia $rc\n");
+	dbg("ISPtools::stop_ISP", "Prewencyjne spanie przez 20s, żeby ISP zdążył się poskładać.\n");
+	sleep 20;
+	
+	return (1) if $rc == 0;						# TSM się poskładał
+	
+	if ($rc != 0)							# Coś poszło nie tak
+	{
+		dbg("ISPtools::stop_ISP", "Wykonanie $tmp_cmd: $rc\n");
+		return (0);
+	}
+}
 
 sub get_process_list()
 # Zwraca hash indeksowany numerami procesów. Wartością jest typ procesu.
@@ -125,17 +144,17 @@ sub get_process_list()
 	return %ret;
 }
 
-sub init_module($$$$$)
-# Funkcja inicjalizacji zmiennych modułu: $host, $admin, $pass, $debug, $verbose
+sub init_module($$;$$$)
+# Funkcja inicjalizacji zmiennych modułu: $debug, $verbose, $admin, $pass, $host
 #   Konstruuje zmienną $cmd które zawiera część wspólną do wywałoania dsmamdc (Uwierzytelnienie, dataonly, itd)
 #   Zwrotka - brak. W razie błędu zatrzyma program.
 {
 	my $tmp_cmd="";			# Bo nie wiadomo, czy będzie se=cośtam czy nie
-	$host = $_[0];
-	$admin = $_[1];
-	$pass = $_[2];
-	$debug = $_[3];
-	$verbose = $_[4];
+	$debug = $_[0];
+	$verbose = $_[1];
+	$admin = $_[2] if ($_[2]);
+	$pass = $_[3] if ($_[3]);
+	$host = $_[4] if ($_[4]);
 	
 	unless( $debug != 0 || $debug != 1)
 	{
@@ -149,13 +168,18 @@ sub init_module($$$$$)
 		exit 1;
 	}
 	
-	if($host ne "")			# Podano jakiś serwer TSM
+	if( $host )			# Podano jakiś serwer TSM
 	{
 		$tmp_cmd = "-se=$host ";
+		dbg("ISPtools::init_module", "Alias serwera ISP: $host.\n");
+	}
+	else
+	{
+		dbg("ISPtools::init_module", "Nie ustawiono aliasu serwer ISP. Zostani użyty domślny serwer z dsm.opt.\n");
 	}
 	
 	$cmd=$cmd.$tmp_cmd." -id=$admin -pa=$pass -dataonly=yes -tab ";
-	dbg("ISPtool::init_module","Komenda do zarządzania ISP: $cmd.\n");
+	dbg("ISPtools::init_module","Komenda do zarządzania ISP: $cmd.\n");
 }
 
 1;		# Bo tak kurwa ma być

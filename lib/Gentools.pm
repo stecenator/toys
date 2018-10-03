@@ -1,7 +1,7 @@
 package Gentools;
 use strict;
 use warnings;
- 
+use Term::ANSIColor qw(:constants);						# Żeby debug był kolorowy
 use Exporter qw(import);
 our $debug = 0;                 						# do rozjechania przez Gentools::debug=1 w module wołającym
 our $verbose=0;
@@ -14,7 +14,7 @@ sub error($$$)
 # $_[1] - Treść błędu" 
 # $_[2] - Kod wyjścia - jesli nie 0 to zakończy program z podanym kodem.
 {
-	print STDERR "$_[0]:"." $_[1]";
+	print STDERR RED, "$_[0]:"." $_[1]", RESET;
 	
 	exit $_[2] if ( $_[2] != 0 );
 }
@@ -22,7 +22,7 @@ sub error($$$)
 sub dbg($$)
 # Komunikat do wyświetlenia, jesli jest włączony tryb debug.
 {
-	print "$_[0]:\t$_[1]" if $debug;
+	print YELLOW, "$_[0]:\t$_[1]", RESET if $debug;
 }
 
 sub verb($)
@@ -223,7 +223,7 @@ sub chk_usr_proc($$)
 	my $rc = $? >> 8;
 	dbg("Gentools::chk_usr_proc", "RC z ps = $rc, output: $line[1]\n");
 	
-	return 0 if ($rc != 0);			# nie ma prosu o tej nazwie
+	return 0 if ($rc != 0);			# nie ma procesu o tej nazwie
 	
 	(my $user, my $pid, undef) = split(" ", $line[1]);
 	

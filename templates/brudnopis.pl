@@ -10,6 +10,7 @@ use Getopt::Std;
 use File::Basename qw(dirname);
 use Cwd  qw(abs_path);
 use lib '../lib';
+use Term::ANSIColor qw(:constants);
 
 # Moduły do dołączenia w razie potrzeby. Powinny być zlokalizaowane w ../lib względem katalogu z któ©ego jest uruchamiany skrypt
 use Gentools qw(dbg verb key_for_val_like chk_usr_proc);
@@ -27,7 +28,7 @@ sub help($)
 	print "Użycie: $my_name [-v] [-d] [-h] [-p plik]\n";
 	print " -v: gadatliwie\n";
 	print " -d: debug, czyli jeszcze bardziej gadatliwie\n";
-	print " -h: Wyświetla pomoc, czyli ten kominikat :-P\n";
+	print RED, " -h: Wyświetla pomoc, czyli ten kominikat :-P\n", RESET;
 	print " -p plik: Jakiś plik jako parametr\n";
 	exit($_[0]);
 }

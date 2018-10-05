@@ -101,8 +101,8 @@ sub stop_ISP()
 	my $rc = $? >> 8;
 	
 	dbg("ISPtools::stop_ISP", "Wywołanie: $tmp_cmd zakończone z kodem wyjścia $rc\n");
-	dbg("ISPtools::stop_ISP", "Prewencyjne spanie przez 20s, żeby ISP zdążył się poskładać.\n");
-	sleep 20;
+	dbg("ISPtools::stop_ISP", "Prewencyjne spanie przez 60s, żeby ISP zdążył się poskładać.\n");
+	sleep 60;
 	
 	return (1) if $rc == 0;						# TSM się poskładał
 	

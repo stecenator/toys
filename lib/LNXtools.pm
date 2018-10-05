@@ -20,15 +20,18 @@ our @EXPORT_OK = qw(get_fc_adapters get_tape_drvs $debug $verbose init_module);
 my $debug=0;
 my $verbose=0;
 our $udev;
+our $pers_prefix;			# katalog /dev/lin-tape/ bo może się rożnić 
 our $distro;				# Distro na jakim działam. Może się przydać.
 
 
-sub init_module()
+sub init_module($)
 # Inicjalizacja rożnych rzeczy które rożnią się pomiędzy dystrybucjami
+# $_[0] - debug
 # Zwrotki:
 #	0 - wszystko ok
 #	1 - nie udało się znaleźć udevadm
 {
+	$debug = shift;
 	$udev = qx(which udevadm);
 	my $rc = $? >> 8;
 	my $ret = 0;
@@ -37,6 +40,9 @@ sub init_module()
 	
 	$ret = 1 if $rc == 1;		# which nie znalzało udevadm
 	chomp $udev;			# Bo się chrzani przy dodaniu argumentów
+					# Szukamy prefixu lin-tape dla persistent names
+	$pers_prefix = pers_tape_prefix();
+	
 	return ($ret);
 }
 
@@ -182,5 +188,52 @@ sub get_fc_adapters() 			# Buduje hasha adapter_fc -> WWPN
 	close(FC);
 	return %fcs;
 }
+
+sub pers_tape_prefix()
+# Sprawdza, czy właćzone jest persistent names i zwraca katalog w którym są linki oznaczające napędy. 
+# Rózna instalacje mają to różnie zriobione, daltego nie można zahardkodować.
+# Zwrotki
+# /dev/katalog/napędów/ - jeśli persistent names jest włączone
+# "" - jeśl persistent names nie jest włączone
+{
+	my $prefix="";
+	
+	if ( ! -d "/etc/udev/rules.d" )
+	{
+		error("LNXtools::pers_tape_prefix", "Katalog /etc/udev/rules.d nie istnieje lub jest niedostępny.\n", 1);
+	}
+	
+	my @rule_list = qx(grep -l 'IBM\*.* SYMLINK' /etc/udev/rules.d/*);
+	
+	if( ! @rule_list ) 
+	{
+		return "";
+	}
+	elsif ( scalar @rule_list > 1 )
+	{
+		error("LNXtools::pers_tape_prefix", "Niespodziwana liczba plików regół zawierająca wzorzec określający reduły nazwenictwa napędów.\n", 1);
+	}
  
+	my $rule_file = shift @rule_list;
+	
+	open(RULES, "$rule_file") or error("LNXtools::pers_tape_prefix", "Nie można oworzyć pliku $rule_file do odczytu.\n", 3);
+	while(<RULES>)
+	{
+		chomp;
+		if( /KERNEL=="IBM\*.* SYMLINK="(.*)"$/ )
+		{
+			$prefix = $1;
+			$prefix =~ /(.*\/)/;
+			$prefix = "/dev/".$1; 		# pewnie można to zrobić ładniej, ale nie wiem jak.
+			dbg("LNXtools::pers_tape_prefix", "Prefix persistent names: $prefix.\n");
+			last;
+		}
+		next;
+	}
+	
+	close(RULES);
+	return $prefix;
+}
+		
+	
 1;					# Bo tak kurwa ma być

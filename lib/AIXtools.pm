@@ -12,9 +12,11 @@ our @EXPORT_OK = qw(get_fc_adapters get_tape_drvs get_disks);
 my $debug=0;
 my $verbose=0;
 
-sub init_module()
+sub init_module($)
+# $_[0] - debug
 # Inicjalizacja zmiennych modułu
 {
+	$debug = shift;
 	dbg("AIXtools::init_module", "Inicjalizacja zmiennych modułu.\n");
 	return 0;
 }

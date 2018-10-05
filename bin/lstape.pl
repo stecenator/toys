@@ -60,8 +60,7 @@ sub setup()
 		$debug = 1;
 		# Tutaj inicjalizacja $debug we wszystkich włączonych modułach.
 		$Gentools::debug = 1;
-		$AIXtools::debug = 1;
-		$LNXtools::debug = 1;
+		#~ $AIXtools::debug = 1;
 		dbg("MAIN::setup","Włączono tryb debug.\n");
 	}
 	
@@ -70,8 +69,7 @@ sub setup()
 		$verbose =1;
 		# Tutaj inicjalizacja $verbose we wszystkich włączonych modułach.
 		$Gentools::verbose = 1;
-		$LNXtools::verbose = 1;
-		$AIXtools::verbose = 1;
+		#~ $AIXtools::verbose = 1;
 		dbg("MAIN::setup","Włączono tryb verbose.\n");
 	}
 	
@@ -96,12 +94,12 @@ dbg("MAIN","OS = $os\n");
 
 if ($os eq "Linux")
 {
-	LNXtools::init_module();
+	LNXtools::init_module($debug);
 	%rmt = LNXtools::get_tape_drvs();
 }
 elsif ($os eq "AIX")
 {
-	AIXtools::init_module();
+	AIXtools::init_module($debug);
 	%rmt = AIXtools::get_tape_drvs();
 }
 

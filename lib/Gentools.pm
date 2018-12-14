@@ -221,7 +221,7 @@ sub chk_usr_proc($$)
 {
 	my @line = qx/ps -C $_[1] -f/;
 	my $rc = $? >> 8;
-	dbg("Gentools::chk_usr_proc", "RC z ps = $rc, output: $line[1]\n");
+	dbg("Gentools::chk_usr_proc", "RC z ps = $rc, output: "."$line[1]"."\n");
 	
 	return 0 if ($rc != 0);			# nie ma procesu o tej nazwie
 	

@@ -30,10 +30,16 @@ Simple Brocade SAN zonning validation tool. It conects to SAN switch gets the ru
 * unused aliases
 * WWNPS with no alias (foreign addresses)
 
+
 ## Usage
 ```bash
-# sanvalidate switch_ip user [pass]
+# sanvalidate [-u USER] [-p PASSWD] switch_ip 
 ```
+
+## Requirements
+This script requires following packages and libraries:
+
+* paramiko - python SSH client library 
 
 # lspv2nmon
 AIX `lspv` converter. Creates nmon disk group file based on lspv output. 

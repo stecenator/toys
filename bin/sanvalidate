@@ -36,3 +36,5 @@ try:
 	sw = Switch.fromSwitchShow("/home/marcinek/prog/python/sanvalidate/switchshow")
 except cfgFileError as e:
 	print(e)
+
+sw.switchSummary()

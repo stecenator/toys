@@ -5,6 +5,8 @@
 import os
 import re
 import sys
+sys.path.append("../lib")
+import Gentools
 
 class cfgFileError(Exception):
 	""" 
@@ -208,6 +210,7 @@ class Switch:
 				if len(lst) == 2:			# key: value line
 					key = lst[0]
 					val = lst[1].strip()
+					_ret.addInfo(key, val)
 				elif re.match("===", line):
 					break				# beginning of ports section in switchshow file. let's start another loop to parse it
 			ports=[]
@@ -222,4 +225,25 @@ class Switch:
 		return _ret
 	
 	def addPort(self, port):
+		"""
+		Adds port object to internal ports array of a Switch object.
+		"""
 		self.ports.append(port)
+
+	def addInfo(self, key, val):
+		"""
+		Adds key - value pair to internal info doctionary of a Switch object.
+		"""
+		self.info[key] = val
+
+	def switchSummary(self):
+		"""
+		Prints to stdout Switch object summary. No port information.
+		"""
+		prt = Gentools.DictPrinter()
+		prt.addPair("Switch name",self.name)
+		prt.addPair("Fabric",self.fabric)
+		prt.addPair("IP/FQDN",self.ip)
+		prt.addPair("Domain",self.dom)
+		prt.addDict(self.info)
+		prt.printCentered()

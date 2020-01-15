@@ -1,0 +1,26 @@
+#!/usr/bin/env python3
+import sys
+import os
+import re
+from optparse import OptionParser
+
+"""
+lspv2nmon - converts AIX lspv output into nmon disk group file. 
+Optionally if input comes from dsh (all lines prefixed with hostname) creates multiple files prefixed with hostname.
+"""
+use = "Usage: %prog [-p prefix] lspv_output_file\n\n."
+
+parser = OptionParser(usage=use)
+parser.add_option("-f", "--file", action="store", type="string", dest="lspv")
+parser.add_option("-p", "--prefix", action="store", type="string", dest="prefix")
+
+(options, args) = parser.parse_args()
+
+try:
+	infile = args[0]
+except IndexError:
+	print("Argument lspv_output_file is mandatory!")
+	sys.exit(1)
+	
+if options.prefix:
+	print(args[0])

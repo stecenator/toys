@@ -8,24 +8,27 @@ from optparse import OptionParser
 lspv2nmon - converts AIX lspv output into nmon disk group file. 
 Optionally if input comes from dsh (all lines prefixed with hostname) creates multiple files prefixed with hostname.
 """
-use = "Usage: %prog [-p prefix] lspv_output_file"
+use = "Usage: %prog  lspv_output_file"
 
 parser = OptionParser(usage=use)
-parser.add_option("-f", "--file", action="store", type="string", dest="lspv", help="AIX lspv command output in a text file.")
-parser.add_option("-p", "--prefix", action="store", type="string", dest="prefix", default="", help="Output file prefix. If empty lspv2nmon prints to stdout.")
+parser.add_option("-d", "--dir", action="store", type="string", dest="dir", help="Output directory", default="/tmp/")
 
 (options, args) = parser.parse_args()
+
+sufix = "disks.txt"
+dest_dir = options.dir
 
 try:
 	infile = args[0]
 except IndexError:
 	print("Argument lspv_output_file is mandatory!")
 	sys.exit(1)
-	
-if options.prefix:
-	print(args[0])
 
+if not dest_dir.endswith("/"):
+	dest_dir = dest_dir + "/"
+	
 if not os.path.isfile(sys.argv[1]):
 	print(f"{sys.argv[1]}: File not found.")
 	sys.exit(1)	
 
+print(dest_dir)

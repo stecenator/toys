@@ -15,20 +15,65 @@ parser.add_option("-d", "--dir", action="store", type="string", dest="dir", help
 
 (options, args) = parser.parse_args()
 
-sufix = "disks.txt"
+sufix = "disks.txt"	
 dest_dir = options.dir
+# if multiple hosts are in input file, output file gets the form of:
+# dest_dir + cur_host + _ + suffix
+cur_host = "nmon"
 
-try:
+# dictionary "vg" => ["hdiskX", "hdiskY", ...]
+dg = {}
+
+try:		# check for mandatory file name argument.
 	infile = args[0]
 except IndexError:
 	print("Argument lspv_output_file is mandatory!")
 	sys.exit(1)
 
+# correct destination path if trailing "/" is missing.
 if not dest_dir.endswith("/"):
 	dest_dir = dest_dir + "/"
-	
-if not os.path.isfile(sys.argv[1]):
-	print(f"{sys.argv[1]}: File not found.")
+
+# check if input file is accesible
+if not os.path.isfile(infile):
+	print(f"{infile}: File not found.")
 	sys.exit(1)	
 
-print(dest_dir)
+# check if prefix is a writable directory
+
+def dump_dg_file(f):
+	"""Saves dg dictionary to file f."""
+	if dg == {}:			# do not dump empty dictionary
+		return	
+	
+	print(f"Dumping into {f}")
+	with open(f, "w") as nmon:
+		for k in dg:
+			dg_str = k
+			for v in dg[k]:
+				dg_str = dg_str + " " + v
+			nmon.write(dg_str + "\n")
+	
+
+with open(infile,'r') as lspv:
+	host = cur_host			# new hostname could be read form input file
+	line = lspv.readline()
+	while line:			# iterate throug hosts if lines are prfixed with it
+		l = line.split()	# l[0] = hdisk, l[2] = vg
+		
+		if l[0].endswith(":"):	# a'm I working on dsh output?
+			host = l.pop(0).rstrip(":")
+		
+		if host != cur_host:	# Started readning new host
+			dump_dg_file(dest_dir + cur_host + "_" + sufix)
+			dg = {}		# restet disk goup dictionary 
+			cur_host = host
+		else:
+			try:
+				dg[l[2]].append(l[0])
+			except KeyError:
+				dg[l[2]] = [ l[0] ]	# It was first disk in this volume group
+		
+			line = lspv.readline()
+	else:
+		dump_dg_file(dest_dir + cur_host + "_" + sufix)

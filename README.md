@@ -46,7 +46,7 @@ AIX `lspv` converter. Creates nmon disk group file based on lspv output.
 ## Usage
 ```bash
 # lspv > file.txt
-# lspv2nmon.py file.txt
+# lspv2nmon file.txt -p prefix
 old_rootvg hdisk0
 caavg_private hdisk1
 None hdisk2 hdisk115 hdisk116 hdisk117 hdisk118 hdisk119 hdisk120 hdisk121 hdisk122

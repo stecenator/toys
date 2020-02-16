@@ -8,6 +8,10 @@ import sys
 sys.path.append("../lib")
 import Gentools
 
+def setDebug(dbg):
+	""" Sets debug mode for this module. """
+	Gentools.debug = dbg
+
 class cfgFileError(Exception):
 	""" 
 	Invalid config file error. Raised by all classes dealing with switch commands output loaded from files.
@@ -18,7 +22,19 @@ class cfgFileError(Exception):
 	def __init__(self, cfgFile, reason):
 		self.cfgFile = cfgFile
 		self.reason = reason
-		
+
+class cfgZoningError(Exception):
+	"""
+	General zoning error class.
+	Attributes:
+		objName:	Object rising exception
+		reason:		Reason why.
+	"""
+	
+	def __init__(self, objName, reason):
+		self.objName = objName
+		self.reason = reason
+	
 class Alias:
 	""" Class representing FOS Alias object. """
 	def __init__(self,name):
@@ -58,6 +74,10 @@ class Zone:
 	def getZoneCreate(self):
 		""" Returns zonecreate FOS statement with current Zone attributes. """
 		ret = f"zonecreate {self.name}, \"dupa;dupa\""
+	
+	def getName(self):
+		""" Returns zone name. """
+		return self.name
 
 class Cfg:
 	""" Cfg - class representing FOS config object. """
@@ -67,9 +87,79 @@ class Cfg:
 			name:	string
 		"""
 		self.name = name
+		self.zones=[]
+		self.aliases=[]
 		
-	# ~ def addZone
+	@classmethod
+	def fromCfgActvShowFile(cls, cfgActvShowFile):
+		""" Loads FOS cfgactvshow text file output, stores it into a list. 
+		Then calls another @classmethod: fromList which creates Cfg object.
+		"""
+		raw_cfg=[]
+		try:
+			infile = open(cfgActvShowFile, "r")
+		except IOerror:
+			raise cfgFileError(cfgActvShowFile, "Unable to read file.")
+		else:
+			with infile:
+				raw_cfg = infile.readlines()
+				
+		return cls.fromList(raw_cfg)
+		
+	@classmethod
+	def fromList(cls, lst):	
+		""" Creates Cfg object based on raw cfgactvshow command output stored in lst list. 
+		It can be either from the text file (see fromCfgActvShowFile method, or taken direectly from ssh session, 
+		typically created by Switch.sshExec() method.
+		"""
+		
+		idx = 0	
+		l = ""
+		cfgName = ""
+		
+		while not ("cfg:" in l) and len(lst) > 0:
+			l = lst.pop(0)
+		
+		if len(lst) == 0:
+			print("Cfg.fromList:\tNo cfg found. Exiting.", file=sys.stderr)
+			exit(1)
+		
+		cfgName = l.split(":")[1].strip()
+		
+		ret = cls(cfgName)
+		
+		z = None
+		
+		while len(lst) > 0:
+			l = lst.pop(0)
+			if "zone:" in l:	# Got zone name here!
+				if z is not None:	# there is a ready zone to add
+					ret.addZone(z)
+				
+				z = Zone(l.split(":")[1].strip())
 
+			else:			# l is WWPN
+				try:		# Should not happen!
+					z.addMember(l.strip())
+					Gentools.dbg("Cfg.fromList", "Adding {z.getName()} zone to {ret.name} config.")
+				except NameError:
+					print(f"Cfg.fromList:\tInput error. Got WWPN not associated with Zone. Config name: {ret.name}", file=sys.stderr)
+		return ret		
+				
+	def addZone(self, zone):
+		"""
+		Adds zone object to Cfg internal zone list. 
+		Raises cfgZoningError exception if zone by that name already exists in config
+		"""
+		
+		for z in self.zones:
+			if z.getName() == zone.getName():
+				raise cfgZoningError(self.name, f"{zname} already exists in config.")
+				return
+		
+		self.zones.append(zone)
+		
+		
 class Port:
 	""" 
 	Switch port.
@@ -152,6 +242,12 @@ class Port:
 					ISL = True
 		
 		return cls(idx, port, addr, med, speed, state, proto, topo, WWPNS, npiv, ld, ISL, trunk, trunkPeer, info)
+		
+	def printSummary(self):
+		"""
+		Prints port summary: index, port, Alias or WWPN.
+		"""
+		print(f"{self.index}\t{self.port}\t")
 		
 class Switch:
 	""" 
@@ -236,7 +332,7 @@ class Switch:
 		"""
 		self.info[key] = val
 
-	def switchSummary(self):
+	def printSummary(self):
 		"""
 		Prints to stdout Switch object summary. No port information.
 		"""
@@ -247,3 +343,16 @@ class Switch:
 		prt.addPair("Domain",self.dom)
 		prt.addDict(self.info)
 		prt.printCentered()
+		
+	def printPorts(self):
+		"""
+		Prints ports information to stdout.
+		"""
+		for port in self.ports:
+			port.printSummary()
+
+	def sshExec(self, cmd):
+		"""
+		Executes a cmd on a switch and rerns it's output as a list of srings.
+		"""
+		return ""

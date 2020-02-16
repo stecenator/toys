@@ -4,6 +4,20 @@
 Generic Tools
 Defines some usefull classes and tools used by other mofules.
 """
+
+debug = False
+
+class txcolors:
+	""" Terminal color const definition. """
+	HEADER = '\033[95m'
+	OKBLUE = '\033[94m'
+	OKGREEN = '\033[92m'
+	WARNING = '\033[93m'
+	FAIL = '\033[91m'
+	ENDC = '\033[0m'
+	BOLD = '\033[1m'
+	UNDERLINE = '\033[4m'
+
 class DictPrinter:
 	"""
 	Provides methods for printing Python dictionaries in human readable form. 
@@ -57,3 +71,10 @@ class DictPrinter:
 		"""
 		for k in self.dict:
 			print(f"{k: >{self._maxKeyLen}} {sep} {self.dict[k]}")
+
+
+# Non-object functions
+def dbg(facility, message):
+	""" Prints \"facility:\tmesage\" type message if this module global variable debug is set to true. """
+	if debug:
+		 print(f"{txcolors.WARNING}{facility}:\t{mesage}{txcolors.ENDC}")

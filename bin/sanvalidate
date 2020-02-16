@@ -10,6 +10,7 @@ from optparse import OptionParser
 # Private modules import
 sys.path.append("../lib")
 from SAN import *
+# ~ import Gentools
 
 # Setup part
 use = "Usage: %prog [-u admin] [-p password] switch_ip_or_fqdn\n\nIf not spcified script will assume defaults for ADMIN and PASWD\n\nArgument switch_ip_or_fqdn is mandatory."
@@ -20,6 +21,8 @@ parser.add_option("-p", "--password", action="store", type="string", dest="paswd
 parser.add_option("-v", "--verbose",
 	action="store_true", dest="verbose", default=False,
 	help="make lots of noise [default]")
+parser.add_option("-d", "--debug", action="store_true", dest="dbg", default=False)
+
 	
 (options, args) = parser.parse_args()
 try:
@@ -32,9 +35,15 @@ if options.verbose:
 	print("I'm supposed to be verbose.")
 	print(args[0])
 
+if options.dbg:
+	setDebug(options.dbg)
+
 try:
 	sw = Switch.fromSwitchShow("/home/marcinek/prog/python/sanvalidate/switchshow")
 except cfgFileError as e:
 	print(e)
 
-sw.switchSummary()
+sw.printSummary()
+sw.printPorts()
+
+cfg = Cfg.fromCfgActvShowFile("/home/marcinek/prog/python/sanvalidate/cfgactvshow")

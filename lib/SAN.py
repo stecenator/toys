@@ -79,6 +79,9 @@ class Zone:
 		""" Returns zone name. """
 		return self.name
 
+	def printNice(self):
+		""" Prints nice looking zone. If possible, resolves WWPNs to aliases. """
+		
 class Cfg:
 	""" Cfg - class representing FOS config object. """
 	def __init__(self,name):
@@ -146,7 +149,7 @@ class Cfg:
 					Gentools.dbg("Cfg.fromList", f"Added {wwpn} member to {z.getName()} zone in {ret.name} config.")
 				except NameError:
 					Gentools.dbg("Cfg.fromList", f"Input error. Got WWPN not associated with Zone. Config name: {ret.name}")
-		else:				# add last zone to collection
+		else:				# add last zone to a collection
 			ret.addZone(z)
 			Gentools.dbg("Cfg.fromList", f"Added {z.getName()} zone to {ret.name} config.")
 			
@@ -326,6 +329,20 @@ class Switch:
 		
 		return _ret
 	
+	@classmethod
+	def fromConfig(cls, configUploadFile):
+		""" Returns Switch object instance based on Borcade's FOS configupload command result file. """
+		if not os.path.isfile(configUploadFile):
+			raise cfgFileError(configUploadFile, "No such file.")
+			
+		with open(configUploadFile, "r") as _infile:
+			line = _infile.readline()
+			while line.strip() != "[Zoning]"
+		
+		_infile.close()
+		
+		return _ret
+		
 	def addPort(self, port):
 		"""
 		Adds port object to internal ports array of a Switch object.

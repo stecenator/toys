@@ -135,15 +135,21 @@ class Cfg:
 			if "zone:" in l:	# Got zone name here!
 				if z is not None:	# there is a ready zone to add
 					ret.addZone(z)
+					Gentools.dbg("Cfg.fromList", f"Added {z.getName()} zone to {ret.name} config.")
 				
 				z = Zone(l.split(":")[1].strip())
 
-			else:			# l is WWPN
+			elif ":" in l:	# l is WWPN
 				try:		# Should not happen!
-					z.addMember(l.strip())
-					Gentools.dbg("Cfg.fromList", "Adding {z.getName()} zone to {ret.name} config.")
+					wwpn = l.strip()
+					z.addMember(wwpn)
+					Gentools.dbg("Cfg.fromList", f"Added {wwpn} member to {z.getName()} zone in {ret.name} config.")
 				except NameError:
-					print(f"Cfg.fromList:\tInput error. Got WWPN not associated with Zone. Config name: {ret.name}", file=sys.stderr)
+					Gentools.dbg("Cfg.fromList", f"Input error. Got WWPN not associated with Zone. Config name: {ret.name}")
+		else:				# add last zone to collection
+			ret.addZone(z)
+			Gentools.dbg("Cfg.fromList", f"Added {z.getName()} zone to {ret.name} config.")
+			
 		return ret		
 				
 	def addZone(self, zone):

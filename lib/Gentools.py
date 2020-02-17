@@ -77,4 +77,7 @@ class DictPrinter:
 def dbg(facility, message):
 	""" Prints \"facility:\tmesage\" type message if this module global variable debug is set to true. """
 	if debug:
-		 print(f"{txcolors.WARNING}{facility}:\t{mesage}{txcolors.ENDC}")
+		 print(f"{txcolors.WARNING}{facility}:{txcolors.ENDC}\t{message}")
+
+def err(facility, message):
+	print(f"{txcolors.FAIL}{facility}:{txcolors.ENDC}\t{message}", file=stderr)

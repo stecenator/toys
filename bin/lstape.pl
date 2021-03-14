@@ -113,6 +113,7 @@ else
 	if($mode eq "comma")
 	{
 		dbg("MAIN", "Wydruk w trybie comma.\n");
+		print_hash_csv( %rmt );
 	}
 	elsif ($mode eq "tab")
 	{

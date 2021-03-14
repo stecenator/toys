@@ -7,19 +7,21 @@ class lin_tape_Missing(Exception):
 
 class Drive:
 	"""Napęd SAN generyczny. Kiedyś rozszerzę tę klasę o LNX_Drive i AIX_Drive"""
-	def __init__(self, name, serial="", WWPN="", WWNN="", FW="", loc="", parent="", reserve="", scsi_id="", lun_id="", blk_size=0, alt_pathing="" ):
-		self.name = name
-		self.WWNN = WWNN
-		self.WWPN = WWPN
-		self.parent = parent
-		self.serial = serial
-		self.FW = FW
-		self.loc = loc
-		self.reserve = reserve
-		self.scsi_id = scsi_id
-		self.lun_id = lun_id
-		self.blk_size = 0
-		self.alt_pathing = alt_pathing
+	def __init__(self, name, serial="", WWPN1="", WWPN2="", WWNN="", FW="", loc="", parent="", reserve="", scsi_id="", lun_id="", blk_size=0, alt_pathing="" ):
+		self.name = name					# Nazwa napędu (rzeczywista. peristent_name to nazwa syboliczna dla napędów linuxowych)
+		self.WWNN = WWNN					# WWNN
+		self.WWPN1 = WWPN1					# WWPN1 i 2. Jak nie ma wielu portów to tylko WWPN1
+		self.WWPN2 = WWPN2
+		self.parent = parent				# HBA
+		self.serial = serial				# Serial
+		self.FW = FW						# Firmware
+		self.loc = loc						# DRC index lub adres karty PCI
+		self.reserve = reserve				# typ rezerwacji SCSI
+		self.scsi_id = scsi_id				# scsi ID
+		self.lun_id = lun_id				# lun_id 
+		self.blk_size = 0					# rozmiar bloku
+		self.alt_pathing = alt_pathing		# Czy jest alt_pathing
+		self.persistent_name = ""			# Nazwa stała napędu. (Dla linuxów)
 		
 	def setWWNN(self, WWNN):
 		""" Ustawia WWNN. """
@@ -60,18 +62,30 @@ class Drive:
 		""" Wypisuje napęd jako CSV."""
 		print(f"{prefix},{self.name},{self.serial},{self.WWPN},{self.WWNN},{self.FW},{self.reserve},{self.scsi_id},{self.lun_id},{self.loc},{self.parent}")
 
-class LNX_Drive(Drive):
+class AIX_Drive(Drive):
+	""" Reprezentacja napędu taśmowego na AIXie. """
 	@classmethod
-	def fromName(cls, name):
-		""" Odczytuje informacje z /sys/class/lin_tape i tworzy obiekt klasy LNX_Drive. """
-		if os.path_exists(f"/sys/class/lin_tape/{sys.argv[1]}"):
-			f = open(f"/sys/class/lin_tape/{sys.argv[1]}/serial",'r')
-			serial = f.readline()
-			f.close()
+	def from_lscfg(cls, lscfg):
+		""" Tworzy obiekt klasy AIX_Drive z listy linii stdout komendy lscfg.
+		Atrybuty:
+			- lscfg: lista linii z outputu komendy lscfg -vl napęd
+		"""
+		m = re.match(r"
 			
-			f = open(f"/sys/class/lin_tape/{sys.argv[1]}/primary_path",'r')
-			alt_pathing = f.readline()
-			f.close()
+
+# ~ class LNX_Drive(Drive):
+	# ~ @classmethod
+	# ~ def fromName(cls, name):
+		# ~ """ Odczytuje informacje z /sys/class/lin_tape i tworzy obiekt klasy LNX_Drive. """
+		# ~ # Sprawdzenie czy dostałem napętd peristent
+		# ~ if os.path_exists(f"/sys/class/lin_tape/{sys.argv[1]}"):
+			# ~ f = open(f"/sys/class/lin_tape/{name}/serial",'r')
+			# ~ serial = f.readline()
+			# ~ f.close()
 			
-		else:
+			# ~ f = open(f"/sys/class/lin_tape/{sys.argv[1]}/primary_path",'r')
+			# ~ alt_pathing = f.readline()
+			# ~ f.close()
+			
+		# ~ else:
 			

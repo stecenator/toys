@@ -12,7 +12,7 @@ use Cwd  qw(abs_path);
 use lib '../lib';
 
 # Moduły do dołączenia w razie potrzeby. Powinny być zlokalizaowane w ../lib względem katalogu z któ©ego jest uruchamiany skrypt
-use Gentools qw(dbg verbose);
+use Gentools qw(dbg verb);
 #use LNXtools;
 #use AIXtools;
 #use ISPtools;

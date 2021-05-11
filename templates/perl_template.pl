@@ -1,4 +1,4 @@
-#!/bin/perl -w
+#!/usr/bin/env perl -w
 #  _____________________________________________________________________________
 # |                                                                             |
 # |    Szablon mojego standadowego programu w Perlu                             |

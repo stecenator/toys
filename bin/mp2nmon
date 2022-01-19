@@ -1,0 +1,53 @@
+#!/usr/bin/env python3
+""" mp2nmon - Generuje plik disks.txt z definicjami grup dyskowych dla nmon na podstawie pojedynczch scieżek.
+"""
+
+import sys
+import os
+from optparse import OptionParser
+
+# Import prywatnych modułów z katalogu ../lib
+sys.path.append("../lib")
+import GenTools as gt
+
+DEBUG = True
+gt.DEBUG = True
+
+def get_vgs():
+	"""Zwraca listę VG"""
+	ret = []
+	pipe = os.popen("vgs -o vg_name --noheadings", "r", 1)
+	line = pipe.readline()
+	while line:
+		gt.dbg("get_vgs", line.strip())
+		ret.append(line.strip())
+		line = pipe.readline()
+	return ret
+
+def get_paths_for_pv(pv):
+	ret = {}
+	return ret
+
+
+def get_pvs_by_vg():
+	"""Zwraca dict VG z dict PV
+
+	VG -> [PV -> [path1, path2]]
+	"""
+	ret = {}
+	pipe = os.popen("pvs -o pv_name,vg_name --noheadings", "r", 1)
+	line = pipe.readline()
+	while line:
+		gt.dbg("get_pvs_by_vg", line.strip())
+		lst = line.strip().split()
+		print(lst)
+		ret[lst[0].strip('/dev/mapper/')] = lst[1]
+		line = pipe.readline()
+	return ret
+
+
+# Main
+if __name__ == "__main__":
+	pvs = get_pvs_by_vg()
+
+	print(pvs)

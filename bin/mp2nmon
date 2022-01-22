@@ -4,6 +4,7 @@
 
 import sys
 import os
+import re
 from optparse import OptionParser
 
 # Import prywatnych modułów z katalogu ../lib
@@ -25,7 +26,32 @@ def get_vgs():
 	return ret
 
 def get_paths_for_pv(pv):
-	ret = {}
+	"""Zwraca listę scieżek dla urządzenia mpath"""
+	ret = []
+
+	pipe = os.popen("multipath -ll", "r", 1)
+	line = pipe.readline()
+	while line:
+		if re.match(rf"^{pv}", line):
+			gt.dbg("get_paths_for_pv", line.strip())
+			pipe.readline()		# pomijanie size=....
+			pipe.readline()		# pomijanie |-+- policy....
+			line = pipe.readline().strip()[5:]
+			gt.dbg("get_paths_for_pv", line)
+			while re.search(fr"\d+:\d+:", line):	# wczytana linia ma postać 1:20...
+				path = line.split()[1]
+				gt.dbg("get_paths_for_pv", f"Scieżka {pv}: {path}.")
+				ret.append(path)
+				line = pipe.readline().strip()[4:]
+				gt.dbg("get_paths_for_pv", f"Następna wczytana: {line}.")
+				if re.search("policy", line):		# czytam drugą paczkę scieżek
+					line = pipe.readline().strip()[4:]
+			break
+#		else:
+#			gt.dbg("get_paths_for_pv", f"Dupa dla: {pv}. Linia {line.strip()}")
+
+		line = pipe.readline()
+
 	return ret
 
 
@@ -35,19 +61,34 @@ def get_pvs_by_vg():
 	VG -> [PV -> [path1, path2]]
 	"""
 	ret = {}
+	pth_lst = []
 	pipe = os.popen("pvs -o pv_name,vg_name --noheadings", "r", 1)
 	line = pipe.readline()
 	while line:
-		gt.dbg("get_pvs_by_vg", line.strip())
-		lst = line.strip().split()
-		print(lst)
-		ret[lst[0].strip('/dev/mapper/')] = lst[1]
+		lst = line.split()
+		vg = lst[1]
+		if vg not in ret:
+			ret[vg] = []		# Zmienić potem na dict
+
+		pv = re.match(fr"(\w+)\d*", lst[0][12:]).group(1)			# obcięcie PW /dev/mapper/mpathaXX z nazwy PV
+		pth_lst = get_paths_for_pv(pv)
+
+		ret[lst[1]].append({pv: pth_lst})
+		gt.dbg("get_pvs_by_vg", f"Dodany do wyniku {pv}. Linia {line.strip()}")
 		line = pipe.readline()
 	return ret
 
+def print_nmon_grps(vgs):
+	for grp in vgs.keys():
+		print(f"{grp} ", end='')
+		for pv in vgs[grp]:
+			for path_lst in pv.values():
+				for path in path_lst:
+					print(f"{path} ", end='')
+		print("")
 
 # Main
 if __name__ == "__main__":
-	pvs = get_pvs_by_vg()
-
-	print(pvs)
+	vgs = get_pvs_by_vg()
+	print(vgs)
+	print_nmon_grps(vgs)

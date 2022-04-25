@@ -68,13 +68,16 @@ def get_pvs_by_vg():
 		lst = line.split()
 		vg = lst[1]
 		if vg not in ret:
-			ret[vg] = []		# Zmienić potem na dict
+			ret[vg] = []
 
-		pv = re.match(fr"(\w+)\d*", lst[0][12:]).group(1)			# obcięcie PW /dev/mapper/mpathaXX z nazwy PV
-		pth_lst = get_paths_for_pv(pv)
+		gt.dbg("get_pvs_by_vg", f"maczuję {lst[0]}")
+		m = re.match(fr" */dev/mapper/(\w+)\d*", lst[0])			# obcięcie PW /dev/mapper/mpathaXX z nazwy PV
+		if m:
+			pv = m.group(1)
+			pth_lst = get_paths_for_pv(pv)
+			ret[lst[1]].append({pv: pth_lst})
+			gt.dbg("get_pvs_by_vg", f"Dodany do wyniku {pv}. Linia {line.strip()}")
 
-		ret[lst[1]].append({pv: pth_lst})
-		gt.dbg("get_pvs_by_vg", f"Dodany do wyniku {pv}. Linia {line.strip()}")
 		line = pipe.readline()
 	return ret
 

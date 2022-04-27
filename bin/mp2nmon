@@ -81,7 +81,54 @@ def get_pvs_by_vg():
 		line = pipe.readline()
 	return ret
 
-def print_nmon_grps(vgs):
+def get_dm_for_lv(vg, lv):
+	"""Zwraca dm-XX dla LV /dev/mapper/{vg}-{lv}
+	"""
+	gt.dbg("get_dm_for_lv", f"ls -la /dev/mapper/{vg}-{lv}")
+	pipe = os.popen(f"ls -la /dev/mapper/{vg}-{lv}", "r", 1)
+	line = pipe.readline()
+	gt.dbg("get_dm_for_lv", f"grupa: {vg}, lv: {lv}")
+	m = re.search(r"(dm-.*)$", line)
+	dm = m.group(0)
+	return dm
+
+
+def get_lvs_by_vg():
+	"""Zwraca dict VG z dm-XX wskazującyh na LV.
+	VG -> [dm-1, dm-2]
+	"""
+
+	ret = {}
+	lv_lst = []
+	pipe = os.popen("lvs --separator ':' --noheadings", "r", 1)
+	line = pipe.readline()
+	while line:
+		lst = line.split(':')
+		vg = lst[1].rstrip()
+		lv = lst[0].lstrip()
+		gt.dbg("get_lvs_by_vg", f"grupa: {vg}, lv: {lv}")
+		if vg not in ret:
+			ret[vg] = []
+
+		dm = get_dm_for_lv(vg, lv)
+		ret[vg].append(dm)
+
+		line = pipe.readline()
+
+	return ret
+
+
+def print_nmon_grps_by_paths(vgs):
+	for grp in vgs.keys():
+		print(f"{grp} ", end='')
+		for pv in vgs[grp]:
+			for path_lst in pv.values():
+				for path in path_lst:
+					print(f"{path} ", end='')
+		print("")
+
+
+def print_nmon_grps_by_lvs(vgs):
 	for grp in vgs.keys():
 		print(f"{grp} ", end='')
 		for pv in vgs[grp]:
@@ -92,6 +139,6 @@ def print_nmon_grps(vgs):
 
 # Main
 if __name__ == "__main__":
-	vgs = get_pvs_by_vg()
+	vgs = get_lvs_by_vg()
 	print(vgs)
-	print_nmon_grps(vgs)
+	print_nmon_grps_by_lvs(vgs)

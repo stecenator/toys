@@ -32,8 +32,12 @@ if options.dbg:
 def get_dm_for_lv(vg, lv):
 	"""Zwraca dm-XX dla LV /dev/mapper/{vg}-{lv}
 	"""
-	gt.dbg("get_dm_for_lv", f"ls -la /dev/mapper/{vg}-{lv}")
-	pipe = os.popen(f"ls -la /dev/mapper/{vg}-{lv}", "r", 1)
+	tmp_vg = vg.replace('-', '--')  # Bo LVM2 w /dev/mapper zamienia pojedyncze '-' na podwójne
+	tmp_lv = lv.replace('-', '--')  # Bo LVM2 w /dev/mapper zamienia pojedyncze '-' na podwójne
+
+
+	gt.dbg("get_dm_for_lv", f"ls -la /dev/mapper/{tmp_vg}-{tmp_lv}")
+	pipe = os.popen(f"ls -la /dev/mapper/{tmp_vg}-{tmp_lv}", "r", 1)
 	line = pipe.readline()
 	gt.dbg("get_dm_for_lv", f"grupa: {vg}, lv: {lv}")
 	m = re.search(r"(dm-.*)$", line)

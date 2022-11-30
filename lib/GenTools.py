@@ -5,6 +5,8 @@ Generic Tools
 Defines some usefull classes and tools used by other mofules.
 """
 
+import sys
+
 DEBUG = False
 
 class TxColors:
@@ -79,4 +81,31 @@ def dbg(facility, message):
 		print(f"{TxColors.WARNING}{facility}:{TxColors.ENDC}\t{message}")
 
 def err(facility, message):
-	print(f"{TxColors.FAIL}{facility}:{TxColors.ENDC}\t{message}", file=stderr)
+	print(f"{TxColors.FAIL}{facility}:{TxColors.ENDC}\t{message}", file=sys.stderr)
+
+def colonify(wwpn, mode='i'):
+	"""
+	Adds a colon between every two characters of wwpn string. Optional mode enables the case conversion
+	'i' - ignore input case,
+	'u'	- convert to upper
+	'l'	- convert to lower
+	"""
+	result = ""
+	l = len(wwpn)
+	# print(f'{wwpn} - {l}')
+	pos = 2
+
+	while pos <= l:
+		result += wwpn[pos-2:pos]
+		pos += 2
+		if pos <= l:
+			result += ':'
+	# else:
+	# 	result = wwpn		# Za krótki string
+
+	if mode == 'l':
+		return result.lower()
+	elif mode == 'u':
+		return result.upper()
+	else:
+		return result

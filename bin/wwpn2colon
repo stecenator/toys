@@ -7,7 +7,7 @@
 import sys
 import os
 import re
-import fileinput			# Załataiw czytanie z STDIn jeśłi nie podano pliku jako argument
+import fileinput			# Załatwia czytanie z STDIn jeśłi nie podano pliku jako argument
 from optparse import OptionParser
 
 # Import prywatnych modułów z katalogu ../lib
@@ -15,7 +15,7 @@ sys.path.append("../lib")
 import GenTools as gt
 
 # Setup part
-use = "Generator grup dyskowych dla nmon -g\nUżycie: %prog [-l|u] plik"
+use = "Wstawia ':' w WWPNy bez dwukropków' -g\nUżycie: %prog [-l|u] plik"
 
 parser = OptionParser(usage=use)
 parser.add_option("-l", "--lower",

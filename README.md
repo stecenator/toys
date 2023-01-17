@@ -72,3 +72,28 @@ Dnpcust5u01vg hdisk143 hdisk144 hdisk145 hdisk146 hdisk171 hdisk172 hdisk173 hdi
 Dnpcust5u02vg hdisk147 hdisk148 hdisk149 hdisk150 hdisk175 hdisk176 hdisk177 hdisk178
 Dnpcust5b01vg hdisk151 hdisk152 hdisk153 hdisk154 hdisk179 hdisk180 hdisk181 hdisk182
 rootvg hdisk200
+```
+
+# `lvm2nmon`
+
+# `wwpn2colon`
+
+# `vdisk2mp` 
+
+Converts `lsvdisk -delim :` to `/etc/multipath.conf` friendly names `multipaths` stanzas. 
+
+Usage:
+
+```bash
+ cat ~/work/lsvdisk.txt | ./vdisk2mp -l
+multipaths {
+	multipath {
+		alias: testha_0
+		wwid: 60:05:07:68:02:84:80:e1:d8:00:00:00:00:00:00:07
+	}
+	multipath {
+		alias: testha_1
+		wwid: 60:05:07:68:02:84:80:e1:d8:00:00:00:00:00:00:08
+	}
+[ ... ]
+```

@@ -1,0 +1,49 @@
+#!/usr/bin/env python3
+""" vdisk2colon - czyta lsvdisk z STDIN lub połączenia ssh do SVC i generuje
+sekcję multipaths { ... } do /etc/multipath.conf
+
+	marcin_stec@pl.ibm.com
+"""
+
+import sys
+import os
+import re
+import fileinput			# Załatwia czytanie z STDIn jeśłi nie podano pliku jako argument
+from optparse import OptionParser
+
+# Import prywatnych modułów z katalogu ../lib
+sys.path.append("../lib")
+import GenTools as gt
+
+# Setup part
+use = "Konwersja `lsvdisk -delim :` na multipaths.\nUżycie: %prog [-l|u] plik"
+
+parser = OptionParser(usage=use)
+parser.add_option("-l", "--lower",
+	action="store_true", dest="lower", default=False,
+	help="Konwertuje cyfry HEX do małych liter.")
+parser.add_option("-u", "--upper",
+	action="store_true", dest="upper", default=False,
+	help="Konwertuje cyfry HEX do wirlkich liter.")
+(options, args) = parser.parse_args()
+
+if options.upper:
+	mode = 'u'
+elif options.lower:
+	mode = 'l'
+else:
+	mode = 'i'
+print("multipaths {")
+
+for line in fileinput.input(args):
+	if re.match('^id:name:IO_group_id:IO_group_name', line):
+		continue	# pomijam nagłówek
+
+	vdisk = line.split(':')
+	wwn = gt.colonify(vdisk[13].rstrip(), mode)
+	print("\tmultipath {")
+	print(f"\t\talias: {vdisk[1]}")
+	print(f"\t\twwid: {wwn}")
+	print("\t}")
+
+print("}")

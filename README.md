@@ -6,6 +6,7 @@ My perl toys reference
 - repl_kiler.pl - a script used to cancel replicate node TSM processess (as per for now, replicte node command has no duration attribute)
 - sanvalidate -Simple Brocade SAN zonning validation tool. It conects to SAN switch gets the running config and reports some usefull information.
 - lspv2nmon.py - converts AIX lspv output into `namon -g group-file` compatible file. Usefull with large, multi-disk systems. 
+- dirstats.py - recursively scans given directory and prints percentage of predefined FileTiers. Used for sizing HSM settings in GPFS.
 
 
 Generic modules for handling some aspects of OS and TSM:
@@ -75,6 +76,27 @@ rootvg hdisk200
 ```
 
 # `lvm2nmon`
+
+# `dirstats.py`
+
+Prints the percentage of files defined in FileTiers hash within given directory:
+
+```bash
+$ python ./dirstats.py /home
+        under4K:	255943	55.91%
+      under128K:	163510	35.72%
+        under4M:	28715	6.27%
+      under128M:	9524	2.08%
+          above:	113	0.02%
+   Pliki i symlinki:	457806.
+           Katalogi:	32393.
+         Brak dost.:	1.
+Maksymana osiągnięta głębokość rekursji: 18.
+Czas wykonania 4.0s.
+
+```
+
+FileTiers should contain file tiwers to measure needed to tune HSM ang GPFS settings. 
 
 # `wwpn2colon`
 

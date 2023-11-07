@@ -1,12 +1,11 @@
 # toys
 Useful perl and shell  toys
-My perl toys reference
 
 - lsrmt.pl - shows AIX and Linux (IBM Lintape) tapedrives in vrious ways. Useful with IBM Spectrum Protect and persistent names
-- repl_kiler.pl - a script used to cancel replicate node TSM processess (as per for now, replicte node command has no duration attribute)
+
 - sanvalidate -Simple Brocade SAN zonning validation tool. It conects to SAN switch gets the running config and reports some usefull information.
 - lspv2nmon.py - converts AIX lspv output into `namon -g group-file` compatible file. Usefull with large, multi-disk systems. 
-- dirstats.py - recursively scans given directory and prints percentage of predefined FileTiers. Used for sizing HSM settings in GPFS.
+- [dirstats.py](doc/dirstats.md) - recursively scans given directory and prints percentage of predefined FileTiers. Used for sizing HSM settings in GPFS.
 
 
 Generic modules for handling some aspects of OS and TSM:

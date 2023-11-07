@@ -168,5 +168,5 @@ if os.path.isdir(directory):       # parametr to katalog do zbadania
     end = timer()
     print(f'Czas wykonania { round(end - start, 2) }s.')
 else:
-    print(f'Prametr { directory } nie wygląda na katalog ¯\_(ツ)_/¯')
+    print(f'Prametr { directory } nie wygląda na katalog ¯\\_(ツ)_/¯')
     exit(1)

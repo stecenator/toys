@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import os
 import sys
 from timeit import default_timer as timer       # Żeby podać czas trwania skryptu
@@ -25,9 +26,21 @@ FileTiers = {
         "count": 0,
         "size" : 0
     },
-    "under10M": {
+    "under4M": {
         "limit": 4194304,
         "color": colors.OKCYAN,
+        "count": 0,
+        "size" : 0
+    },
+    "under10M": {
+        "limit": 10485760,
+        "color": colors.OKBLUE,
+        "count": 0,
+        "size" : 0
+    },
+    "under100M": {
+        "limit": 104857600,
+        "color": colors.OKGREEN,
         "count": 0,
         "size" : 0
     }

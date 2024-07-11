@@ -124,6 +124,22 @@ def print_file_stats(stats):
         ext_count = str(stats[key][0])
         print(f'{ key.rjust(ext_pad) }:{ ext_count.rjust(cnt_pad) }{ human_size.rjust(size_pad) }')
 
+def print_file_stats_csv(stats):
+    """
+    Drukuje ładnie podsumowanie zliczonych rozszerzeń plików
+    """
+    cols, rows = os.get_terminal_size()
+    line = "_" * cols
+    # Padding
+    ext_pad = 20
+    cnt_pad = 20
+    size_pad = 30
+
+    for key in stats:
+        human_size = bytes2human(stats[key][1])
+        ext_count = str(stats[key][0])
+        print(f'{ key },{ ext_count },{ human_size }')
+
 # Main
 start = timer()
 parser = argparse.ArgumentParser(description="Zliczanie plików po rozszerzeniach.")
@@ -132,6 +148,7 @@ parser.add_argument('dir', nargs='?', default='.', help="Katalog do przeliczenia
 parser_grp = parser.add_mutually_exclusive_group()
 parser_grp.add_argument('-u', '--upper', help="Konwertuj wszystkie rozszerzenia na WIELKIE litery", action="store_true")
 parser_grp.add_argument('-l', '--lower', help="Konwertuj wszystkie rozszerzenia na małe litery", action="store_true")
+parser.add_argument('-c', '--comma', help='Output w formacie CSV', action='store_true')
 args = parser.parse_args()
 
 directory = args.dir
@@ -155,7 +172,10 @@ print(f'Konwersja: { conv }')
 if os.path.isdir(directory):       # parametr to katalog do zbadania
     depth, FilesCount, DirsCount, FailedDirs, TotalBytes = dir_file_stats(0, directory, ext_pattern)
     print("\n")
-    print_file_stats(FileStats)
+    if args.comma:
+        print_file_stats_csv(FileStats)
+    else:
+        print_file_stats(FileStats)
     print("\n")
     print(f'Pliki i symlinki:'.rjust(20) + f'{ str(FilesCount).rjust(20, " ") }')
     print(f'Katalogi:'.rjust(20) + f'{ str(DirsCount).rjust(20, " ") }')
